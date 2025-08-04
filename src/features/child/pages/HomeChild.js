@@ -18,16 +18,11 @@ function HomeChild() {
     const [error, setError] = useState(null);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-    // 각 캐릭터의 위치를 객체로 관리 (값은 숫자)
     const [charPositions, setCharPositions] = useState({});
-    
-    // 드래그 중인 캐릭터의 인덱스와 정보를 ref에 저장
     const dragInfo = useRef({ isDragging: false, charIndex: null, startX: 0, startY: 0, startLeft: 0, startTop: 0 });
     const playroomRef = useRef(null);
 
-    // 데이터 불러오기 함수
     const fetchData = async () => {
-        // setLoading(true); // 재호출 시 깜빡임 방지
         try {
             const userId = 2;
             const [userResponse, itemsResponse] = await Promise.all([
@@ -44,13 +39,9 @@ function HomeChild() {
             setUserInfo(userData);
             setAllItems(itemsData);
 
-            // 불러온 캐릭터 수에 맞게 초기 위치 설정
-            // TODO: 추후 DB에서 각 캐릭터의 저장된 위치를 불러와야 합니다.
             if (Array.isArray(userData.base_character_img)) {
-                // 기존 위치 정보가 없거나 캐릭터 수가 변경된 경우에만 초기 위치 설정
                 const currentPositions = charPositions;
                 let positionsChanged = Object.keys(currentPositions).length !== userData.base_character_img.length;
-
                 if (positionsChanged) {
                     const initialPositions = {};
                     userData.base_character_img.forEach((_, index) => {
@@ -59,7 +50,6 @@ function HomeChild() {
                     setCharPositions(initialPositions);
                 }
             }
-
         } catch (err) {
             setError(err.message);
         } finally {
@@ -76,7 +66,6 @@ function HomeChild() {
         navigate(`/${path}`);
     };
 
-    // 아이템 적용(Equip) API 호출
     const handleItemSelect = async (item) => {
         const payload = { user_id: userInfo.user_id };
         if (item.item_type === 1) {
@@ -102,9 +91,7 @@ function HomeChild() {
         }
     };
 
-    // 드래그 로직
     const getCoords = (e) => ({ x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY });
-
     const handleDragStart = (e, index) => {
         e.preventDefault();
         const initialPosition = charPositions[index] || {x: e.currentTarget.offsetLeft, y: e.currentTarget.offsetTop};
@@ -121,37 +108,29 @@ function HomeChild() {
         window.addEventListener('mouseup', handleDragEnd);
         window.addEventListener('touchend', handleDragEnd);
     };
-
     const handleDragMove = (e) => {
         if (!dragInfo.current.isDragging || !playroomRef.current) return;
-        
         const deltaX = getCoords(e).x - dragInfo.current.startX;
         const deltaY = getCoords(e).y - dragInfo.current.startY;
-        
         const newLeft = dragInfo.current.startLeft + deltaX;
         const newTop = dragInfo.current.startTop + deltaY;
-
         const parentRect = playroomRef.current.getBoundingClientRect();
         const charWidth = 120;
         const charHeight = 120;
         const padding = 5;
-
         const clampedX = Math.max(padding, Math.min(newLeft, parentRect.width - charWidth - padding));
         const clampedY = Math.max(padding, Math.min(newTop, parentRect.height - charHeight - padding));
-        
         setCharPositions(prev => ({
             ...prev,
             [dragInfo.current.charIndex]: { x: clampedX, y: clampedY }
         }));
     };
-
     const handleDragEnd = () => {
         dragInfo.current.isDragging = false;
         window.removeEventListener('mousemove', handleDragMove);
         window.removeEventListener('touchmove', handleDragMove);
         window.removeEventListener('mouseup', handleDragEnd);
         window.removeEventListener('touchend', handleDragEnd);
-        // TODO: 변경된 charPositions 객체를 DB에 저장하는 API 호출
     };
 
     if (loading) return <div className="status-text">로딩 중...</div>;
@@ -166,8 +145,12 @@ function HomeChild() {
             <header className="home-child-header">
                 <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
             </header>
-
             <main className="home-child-content">
+                {/* --- 변경 버튼 추가 --- */}
+                <button className="change-view-button" onClick={() => navigate('/homeadult')}>
+                    변경
+                </button>
+                
                 <div 
                     ref={playroomRef}
                     className="playroom" 
@@ -205,7 +188,6 @@ function HomeChild() {
                     </button>
                 ))}
             </footer>
-
             {isPanelOpen && (
                 <div className="custom-panel-overlay" onClick={() => setIsPanelOpen(false)}>
                     <div className="custom-panel" onClick={(e) => e.stopPropagation()}>
@@ -251,5 +233,4 @@ function HomeChild() {
         </div>
     );
 }
-
 export default HomeChild;

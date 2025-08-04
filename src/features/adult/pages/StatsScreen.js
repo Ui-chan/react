@@ -19,7 +19,6 @@ ChartJS.register(
   CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend, ArcElement
 );
 
-// 부모님용 하단 네비게이션 아이콘 정보
 const navItems = [
   { id: 'homeadult', icon: '🏠', label: '홈' },
   { id: 'stats', icon: '📝', label: '행동 기록' }, // 22 -> behaviorLog
@@ -35,6 +34,7 @@ function StatsScreen() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedGame, setSelectedGame] = useState('game1');
+    const [visibleChart, setVisibleChart] = useState(null);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -66,6 +66,11 @@ function StatsScreen() {
 
     const handleGameSelect = (game) => {
         setSelectedGame(game);
+        setVisibleChart(null);
+    };
+    
+    const handleMetricClick = (chartName) => {
+        setVisibleChart(prev => (prev === chartName ? null : chartName));
     };
 
     const renderLineChart = (data, label, unit = '') => {
@@ -81,14 +86,12 @@ function StatsScreen() {
                 tension: 0.3,
             }],
         };
-        const options = {
-            scales: { y: { ticks: { callback: value => value + unit } } }
-        };
+        const options = { scales: { y: { ticks: { callback: value => value + unit } } } };
         return <Line data={chartData} options={options} />;
     };
 
     const renderBarChart = (data, labelText) => {
-        if (!data || Object.keys(data).length === 0) return <p className="no-data-text">표시할 데이터가 없습니다.</p>;
+        if (!data || Object.keys(data).length === 0 || Object.values(data).every(v => v === 0)) return <p className="no-data-text">표시할 데이터가 없습니다.</p>;
         const chartData = {
             labels: Object.keys(data).map(l => l === 'NONE' ? '도움 없음' : (l === 'VERBAL' ? '말로만' : '손으로')),
             datasets: [{
@@ -108,7 +111,7 @@ function StatsScreen() {
             labels: chartLabels,
             datasets: [{
                 label: labelText,
-                data: chartValues,
+                data: chartValues.map(v => formatNumber(v)),
                 backgroundColor: ['#a7d7f9', '#f7a7a3', '#f3d49b'],
             }],
         };
@@ -118,7 +121,7 @@ function StatsScreen() {
     return (
         <div className="adult-page-layout">
             <header className="adult-page-header">
-                <h1 className="header-logo">ZeroDose</h1>
+                <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
             </header>
 
             <div className="game-select-tabs">
@@ -134,103 +137,60 @@ function StatsScreen() {
                  stats ? (
                     <div className="stats-container">
                         {selectedGame === 'game1' && (
-                             <section className="info-card">
+                             <section className="stats-card">
                                 <h3>🔎 '저기 봐!' 놀이 리포트</h3>
                                 <div className="summary-grid">
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 시도 횟수</span>
-                                        <span className="summary-value">{stats.game1.today_attempts}회</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 정답률</span>
-                                        <span className="summary-value">{formatNumber(stats.game1.today_success_rate)}%</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 플레이 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game1.today_play_duration_seconds / 60)}분</span>
-                                    </div>
-                                     <div className="summary-item">
-                                        <span className="summary-label">전체 평균 반응 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game1.overall_avg_response_time / 1000)}초</span>
-                                    </div>
+                                    <div className="summary-item"><span className="summary-label">오늘 시도 횟수</span><span className="summary-value">{stats.game1.today_attempts}회</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 정답률</span><span className="summary-value">{formatNumber(stats.game1.today_success_rate)}%</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 플레이 시간</span><span className="summary-value">{formatNumber(stats.game1.today_play_duration_seconds / 60)}분</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g1_avg_response' ? 'active' : ''}`} onClick={() => handleMetricClick('g1_avg_response')}><span className="summary-label">전체 평균 반응 시간 ▾</span><span className="summary-value">{formatNumber(stats.game1.overall_avg_response_time / 1000)}초</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g1_avg_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g1_avg_success')}><span className="summary-label">전체 평균 정답률 ▾</span><span className="summary-value">{formatNumber(stats.game1.overall_avg_success_rate)}%</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g1_assist_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g1_assist_success')}><span className="summary-label">도움 수준별 정답률 ▾</span><span className="summary-value">그래프 보기</span></div>
                                 </div>
-                                <div className="chart-container">
-                                    <h4>날짜별 정답률 (%)</h4>
-                                    {renderLineChart(stats.game1.daily_success_rate_trend, '정답률', '%')}
-                                </div>
-                                <div className="chart-container">
-                                    <h4>날짜별 평균 반응 시간 (초)</h4>
-                                    {renderLineChart(stats.game1.daily_response_time_trend.map(d => ({...d, value: d.value / 1000})), '반응 시간', '초')}
-                                </div>
-                                <div className="chart-container">
-                                    <h4>도움 수준별 평균 정답률 (%)</h4>
-                                    {renderBarChart(stats.game1.success_rate_by_assistance, '정답률')}
+                                <div className="chart-display-area">
+                                    {visibleChart === 'g1_avg_response' && <div className="chart-container"><h4>날짜별 평균 반응 시간 (초)</h4>{renderLineChart(stats.game1.daily_response_time_trend.map(d => ({...d, value: d.value / 1000})), '반응 시간', '초')}</div>}
+                                    {visibleChart === 'g1_avg_success' && <div className="chart-container"><h4>날짜별 정답률 (%)</h4>{renderLineChart(stats.game1.daily_success_rate_trend, '정답률', '%')}</div>}
+                                    {visibleChart === 'g1_assist_success' && <div className="chart-container"><h4>도움 수준별 평균 정답률 (%)</h4>{renderBarChart(stats.game1.success_rate_by_assistance, '정답률')}</div>}
                                 </div>
                             </section>
                         )}
                         {selectedGame === 'game2' && (
-                             <section className="info-card">
+                             <section className="stats-card">
                                 <h3>😊 '표정 짓기' 놀이 리포트</h3>
                                 <div className="summary-grid">
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 진행 횟수</span>
-                                        <span className="summary-value">{stats.game2.today_play_count}회</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 플레이 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game2.today_play_duration_seconds)}초</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">하루 평균 플레이 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game2.avg_daily_play_time_seconds / 60)}분</span>
-                                    </div>
-                                     <div className="summary-item">
-                                        <span className="summary-label">전체 평균 반응 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game2.overall_avg_response_time / 1000)}초</span>
-                                    </div>
+                                    <div className="summary-item"><span className="summary-label">오늘 진행 횟수</span><span className="summary-value">{stats.game2.today_play_count}회</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 플레이 시간</span><span className="summary-value">{formatNumber(stats.game2.today_play_duration_seconds)}초</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 평균 반응 시간</span><span className="summary-value">{formatNumber(stats.game2.today_avg_response_time / 1000)}초</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g2_avg_response' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_avg_response')}><span className="summary-label">전체 평균 반응 시간 ▾</span><span className="summary-value">{formatNumber(stats.game2.overall_avg_response_time / 1000)}초</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g2_avg_playtime' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_avg_playtime')}><span className="summary-label">하루 평균 플레이 시간 ▾</span><span className="summary-value">{formatNumber(stats.game2.avg_daily_play_time_seconds / 60)}분</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g2_assist_playtime' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_assist_playtime')}><span className="summary-label">도움 수준별 플레이 시간 ▾</span><span className="summary-value">그래프 보기</span></div>
                                 </div>
-                                <div className="chart-container">
-                                    <h4>날짜별 평균 반응 시간 (초)</h4>
-                                    {renderLineChart(stats.game2.daily_response_time_trend.map(d => ({...d, value: d.value / 1000})), '반응 시간', '초')}
-                                </div>
-                                <div className="chart-container pie-chart">
-                                    <h4>도움 수준별 플레이 시간 (초)</h4>
-                                    {renderPieChart(stats.game2.play_time_by_assistance, '플레이 시간')}
+                                <div className="chart-display-area">
+                                    {visibleChart === 'g2_avg_response' && <div className="chart-container"><h4>날짜별 평균 반응 시간 (초)</h4>{renderLineChart(stats.game2.daily_response_time_trend.map(d => ({...d, value: d.value / 1000})), '반응 시간', '초')}</div>}
+                                    {visibleChart === 'g2_avg_playtime' && <div className="chart-container"><h4>날짜별 플레이 시간 (초)</h4>{renderLineChart(stats.game2.daily_response_time_trend, '플레이 시간', '초')}</div>}
+                                    {visibleChart === 'g2_assist_playtime' && <div className="chart-container pie-chart"><h4>도움 수준별 플레이 시간 (초)</h4>{renderPieChart(stats.game2.play_time_by_assistance, '플레이 시간')}</div>}
                                 </div>
                             </section>
                         )}
                         {selectedGame === 'game3' && (
-                            <section className="info-card">
+                            <section className="stats-card">
                                 <h3>⚽ '공 주고받기' 놀이 리포트</h3>
                                 <div className="summary-grid">
-                                     <div className="summary-item">
-                                        <span className="summary-label">오늘 시도 횟수</span>
-                                        <span className="summary-value">{stats.game3.today_attempts}회</span>
+                                    <div className="summary-item"><span className="summary-label">오늘 시도 횟수</span><span className="summary-value">{stats.game3.today_attempts}회</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 성공률</span><span className="summary-value">{formatNumber(stats.game3.today_success_rate)}%</span></div>
+                                    <div className="summary-item"><span className="summary-label">오늘 플레이 시간</span><span className="summary-value">{formatNumber(stats.game3.today_play_duration_seconds / 60)}분</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g3_avg_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_avg_success')}><span className="summary-label">전체 평균 성공률 ▾</span><span className="summary-value">{formatNumber(stats.game3.overall_avg_success_rate)}%</span></div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g3_avg_power' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_avg_power')}>
+                                        <span className="summary-label">전체 평균 Throw Power ▾</span>
+                                        <span className="summary-value">{formatNumber(stats.game3.avg_power_by_assistance.NONE || 0)}</span>
+                                        <span className="metric-note">기준: 60~70</span>
                                     </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 성공률</span>
-                                        <span className="summary-value">{formatNumber(stats.game3.today_success_rate)}%</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">오늘 플레이 시간</span>
-                                        <span className="summary-value">{formatNumber(stats.game3.today_play_duration_seconds / 60)}분</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <span className="summary-label">전체 평균 성공률</span>
-                                        <span className="summary-value">{formatNumber(stats.game3.overall_avg_success_rate)}%</span>
-                                    </div>
+                                    <div className={`summary-item clickable ${visibleChart === 'g3_assist_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_assist_success')}><span className="summary-label">도움 수준별 성공률 ▾</span><span className="summary-value">그래프 보기</span></div>
                                 </div>
-                                <div className="chart-container">
-                                    <h4>날짜별 성공률 (%)</h4>
-                                    {renderLineChart(stats.game3.daily_success_rate_trend, '성공률', '%')}
-                                </div>
-                                <div className="chart-container">
-                                    <h4>날짜별 평균 던지기 파워</h4>
-                                    {renderLineChart(stats.game3.daily_avg_power_trend, '평균 파워')}
-                                </div>
-                                <div className="chart-container">
-                                    <h4>도움 수준별 평균 성공률 (%)</h4>
-                                    {renderBarChart(stats.game3.success_rate_by_assistance, '성공률')}
+                                 <div className="chart-display-area">
+                                    {visibleChart === 'g3_avg_success' && <div className="chart-container"><h4>날짜별 성공률 (%)</h4>{renderLineChart(stats.game3.daily_success_rate_trend, '성공률', '%')}</div>}
+                                    {visibleChart === 'g3_avg_power' && <div className="chart-container"><h4>날짜별 평균 던지기 파워</h4>{renderLineChart(stats.game3.daily_avg_power_trend, '평균 파워')}</div>}
+                                    {visibleChart === 'g3_assist_success' && <div className="chart-container"><h4>도움 수준별 평균 성공률 (%)</h4>{renderBarChart(stats.game3.success_rate_by_assistance, '성공률')}</div>}
                                 </div>
                             </section>
                         )}
@@ -241,11 +201,7 @@ function StatsScreen() {
 
             <footer className="bottom-navigation">
                 {navItems.map((item) => (
-                    <button 
-                        key={item.id} 
-                        className={`nav-item ${item.id === 'stats' ? 'active' : ''}`}
-                        onClick={() => handleNavClick(item.id)}
-                    >
+                    <button key={item.id} className={`nav-item ${item.id === 'stats' ? 'active' : ''}`} onClick={() => handleNavClick(item.id)}>
                         <div className="nav-icon">{item.icon}</div>
                         <span className="nav-label">{item.label}</span>
                     </button>

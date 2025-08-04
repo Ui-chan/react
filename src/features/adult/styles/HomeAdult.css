@@ -19,19 +19,43 @@
   z-index: 10;
 }
 
-.home-header .logo {
-    font-size: 28px;
-    font-weight: bold;
-    color: #7a73ff;
-    margin: 0;
-  }
+.header-logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #343a40;
+  margin: 0;
+}
 
 /* 메인 콘텐츠 */
 .adult-page-content {
   flex-grow: 1;
   overflow-y: auto;
   padding: 25px 20px;
+  position: relative; /* 변경 버튼의 위치 기준점 */
 }
+
+/* --- 변경 버튼 스타일 추가 --- */
+.change-view-button {
+  position: absolute;
+  top: 25px;
+  right: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  z-index: 5;
+  transition: all 0.2s ease;
+}
+.change-view-button:hover {
+  background-color: #f1f3f5;
+  border-color: #ced4da;
+}
+
 
 /* 공통 카드 스타일 */
 .profile-card, .info-card {
@@ -39,7 +63,8 @@
   border-radius: 20px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-  margin-bottom: 25px;
+  margin: 0 auto 25px auto; /* 좌우 중앙 정렬 */
+  max-width: 800px;
   text-align: center;
 }
 
@@ -111,11 +136,16 @@
 .training-summary, .education-summary, .behavior-summary {
   text-align: left;
 }
+.training-summary p, .education-summary p, .behavior-summary p {
+  margin: 0;
+}
 
 .grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20px;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 /* 하단 네비게이션 바 */

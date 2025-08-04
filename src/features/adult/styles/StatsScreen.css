@@ -34,6 +34,7 @@
   padding: 15px 20px;
   background-color: #f1f3f5;
   flex-shrink: 0;
+  border-bottom: 1px solid #dee2e6;
 }
 .tab-button {
   padding: 8px 16px;
@@ -57,7 +58,6 @@
   flex-grow: 1;
   overflow-y: auto;
   padding: 25px 20px;
-  text-align: center;
 }
 
 .content-title {
@@ -65,6 +65,7 @@
   font-weight: 700;
   color: #212529;
   margin-bottom: 20px;
+  text-align: center;
 }
 
 .status-text {
@@ -77,12 +78,12 @@
   color: #fa5252;
 }
 
-/* 통계 카드 */
+/* 통계 컨테이너 및 카드 */
 .stats-container {
   max-width: 800px;
   margin: 0 auto;
 }
-.info-card {
+.stats-card {
   background-color: white;
   border-radius: 20px;
   padding: 25px;
@@ -90,23 +91,27 @@
   margin: 0 auto 25px auto;
   text-align: left;
 }
-.info-card h3 {
+.stats-card h3 {
   font-size: 1.5rem;
   margin: 0 0 25px 0;
   font-weight: 700;
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* 전체 요약 스타일 */
+/* --- 요약 그리드 (3x3) 수정 --- */
 .summary-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr); /* 한 줄에 3개씩 표시 */
+    gap: 15px;
+    margin-bottom: 30px;
 }
 .summary-item {
     background-color: #f8f9fa;
     border-radius: 12px;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
 }
 .summary-label {
@@ -116,18 +121,47 @@
     margin-bottom: 8px;
 }
 .summary-value {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: 700;
     color: #20c997;
 }
+.metric-note {
+    display: block;
+    font-size: 0.8rem;
+    color: #adb5bd;
+    margin-top: 4px;
+}
 
-/* 차트 컨테이너 */
+/* 클릭 가능한 요약 아이템 */
+.summary-item.clickable {
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.summary-item.clickable:hover {
+    background-color: #e9ecef;
+}
+.summary-item.clickable.active {
+    background-color: #d3f9d8;
+    box-shadow: 0 0 0 2px #20c997 inset;
+}
+
+/* 차트 표시 영역 */
+.chart-display-area {
+    margin-top: 20px;
+}
 .chart-container {
   margin-bottom: 30px;
+  border: 1px solid #f1f3f5;
+  border-radius: 15px;
+  padding: 20px;
+}
+.chart-container:last-child {
+    margin-bottom: 0;
 }
 .chart-container h4 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   text-align: center;
+  font-weight: 600;
   color: #495057;
   margin: 0 0 15px 0;
 }
@@ -135,7 +169,11 @@
   max-width: 350px;
   margin: 0 auto;
 }
-
+.no-data-text {
+    text-align: center;
+    color: #adb5bd;
+    padding: 20px;
+}
 
 /* 하단 네비게이션 바 */
 .bottom-navigation {

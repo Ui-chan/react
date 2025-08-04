@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ThirdGame.css';
 
-const TOTAL_TURNS = 5;
-const PERFECT_THROW_RANGE = [70, 90];
+const TOTAL_TURNS = 7;
+const PERFECT_THROW_RANGE = [70, 100];
 
 function ThirdGamePage() {
   const [gameState, setGameState] = useState('explanation');
@@ -14,42 +14,35 @@ function ThirdGamePage() {
   
   const [ballState, setBallState] = useState('at-character');
   const [power, setPower] = useState(0);
-  const [isCharging, setIsCharging] = useState(false);
   const [throwFeedback, setThrowFeedback] = useState('');
   const [characterState, setCharacterState] = useState('idle');
+  const [gaugeSpeed, setGaugeSpeed] = useState(25);
 
   const powerIntervalRef = useRef(null);
+  const [turnState, setTurnState] = useState('ready');
+  
+  // 게이지 방향 제어를 위한 ref
+  const gaugeDirection = useRef('up');
 
-  // --- API 연동 상태 ---
   const [sessionId, setSessionId] = useState(null);
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
   const [turnStartTime, setTurnStartTime] = useState(null);
 
   useEffect(() => {
-    if (isCharging) {
-      powerIntervalRef.current = setInterval(() => {
-        setPower(p => (p >= 100 ? 0 : p + 2));
-      }, 20);
-    } else {
-      clearInterval(powerIntervalRef.current);
-    }
-    return () => clearInterval(powerIntervalRef.current);
-  }, [isCharging]);
-
-  useEffect(() => {
     if (gameState !== 'playing') return;
-
-    if (ballState === 'at-character') {
+    if (ballState === 'at-character' && turnState === 'thrown') {
       const timer = setTimeout(() => {
         setBallState('at-child');
         setCharacterState('idle');
+        setTurnState('ready');
       }, 1500);
       return () => clearTimeout(timer);
     } 
     else if (ballState === 'at-child') {
       setTurnStartTime(Date.now());
+      setPower(0); // 다음 턴이 시작되면 게이지를 0으로 리셋
     }
-  }, [ballState, gameState]);
+  }, [ballState, turnState, gameState]);
   
   const handleStartGame = async () => {
     try {
@@ -59,43 +52,62 @@ function ThirdGamePage() {
         body: JSON.stringify({ user_id: 2, game_id: 3 }),
       });
       if (!response.ok) throw new Error('Failed to start session');
-      
       const data = await response.json();
       setSessionId(data.session_id);
       setGameState('playing');
       setSuccessfulThrows(0);
       setTotalAttempts(0);
-      setBallState('at-character');
+      setBallState('at-child'); 
       setFinalAssistanceLevel(null);
+      setGaugeSpeed(25);
+      setTurnState('ready');
     } catch (error) {
       console.error("Error starting game session:", error);
       alert("게임 세션을 시작하는 데 실패했습니다.");
     }
   };
 
+  // --- 버튼 누르기 시작: 게이지 왕복 운동 시작 ---
   const handleChargeStart = () => {
-    if (ballState === 'at-child') {
-      setIsCharging(true);
-    }
+    if (turnState !== 'ready' || ballState !== 'at-child') return;
+
+    setPower(0);
+    gaugeDirection.current = 'up'; // 항상 0에서 위로 시작
+    setTurnState('charging');
+    
+    powerIntervalRef.current = setInterval(() => {
+      setPower(p => {
+        if (gaugeDirection.current === 'up') {
+          if (p >= 100) {
+            gaugeDirection.current = 'down'; // 100에 도달하면 방향 전환
+            return p - 1;
+          }
+          return p + 1;
+        } else { // 'down'
+          if (p <= 0) {
+            gaugeDirection.current = 'up'; // 0에 도달하면 방향 전환
+            return p + 1;
+          }
+          return p - 1;
+        }
+      });
+    }, gaugeSpeed);
   };
 
+  // --- 버튼에서 손 떼기: 게이지 멈추고 공 던지기 ---
   const handleThrow = async () => {
-    if (ballState !== 'at-child' || !isCharging) return;
-    
-    setIsCharging(false);
-    const currentPower = power;
-    setPower(0);
-    
+    if (turnState !== 'charging') return;
+
+    clearInterval(powerIntervalRef.current); // 게이지 멈춤
+    setTurnState('thrown'); // 턴 상태를 '던짐'으로 변경하여 버튼 비활성화
+
+    const currentPower = power; // 현재 멈춘 power 값 사용
     const responseTimeMs = Date.now() - turnStartTime;
-    
     let feedbackText = '';
     let isSuccess = false;
 
     if (currentPower >= PERFECT_THROW_RANGE[0] && currentPower <= PERFECT_THROW_RANGE[1]) {
       feedbackText = 'Perfect!';
-      isSuccess = true;
-    } else if (currentPower > 50) {
-      feedbackText = 'Good!';
       isSuccess = true;
     } else {
       feedbackText = 'Too Weak...';
@@ -104,14 +116,17 @@ function ThirdGamePage() {
     
     setThrowFeedback(feedbackText);
 
+    if (isSuccess) {
+      setGaugeSpeed(prevSpeed => Math.max(10, prevSpeed - 3));
+    } else {
+      setGaugeSpeed(prevSpeed => Math.min(40, prevSpeed + 8));
+    }
+
     const logData = {
         session_id: sessionId,
         is_successful: isSuccess,
         response_time_ms: responseTimeMs,
-        interaction_data: {
-            throw_power: currentPower,
-            result: feedbackText,
-        },
+        interaction_data: { throw_power: currentPower, result: feedbackText },
     };
 
     try {
@@ -140,10 +155,10 @@ function ThirdGamePage() {
                 setBallState('at-character');
             }
         }, 1200);
-
     } catch (error) {
         console.error("Error logging interaction:", error);
         alert("게임 기록 저장에 실패했습니다.");
+        setTurnState('ready');
     }
   };
 
@@ -181,7 +196,7 @@ function ThirdGamePage() {
       <p>
         타이밍에 맞춰 버튼을 눌렀다 떼서<br/>
         캐릭터에게 공을 던져주는 놀이입니다.<br/>
-        총 5번의 기회가 주어집니다.<br/>
+        총 7번의 기회가 주어집니다.<br/>
         <strong>상호작용적 차례 지키기</strong>를 배우는 데 도움이 됩니다.
       </p>
       <div className="game-buttons-container">
@@ -193,6 +208,8 @@ function ThirdGamePage() {
 
   const renderGamePage = () => (
     <div className="third-game-container">
+      <button onClick={() => navigate('/play')} className="game-play-back-button">‹</button>
+      
       <div 
         className="game-area"
         style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/assets/soccer.png)` }}
@@ -217,7 +234,9 @@ function ThirdGamePage() {
       
       <div className="power-meter-container">
         <div className="power-meter-bar">
-          <div className="power-meter-fill" style={{ width: `${power}%` }}></div>
+          <div className="power-meter-fill" style={{ width: `${power}%` }}>
+            <div className="gauge-indicator"></div>
+          </div>
           <div className="power-meter-sweet-spot"></div>
         </div>
       </div>
@@ -228,9 +247,9 @@ function ThirdGamePage() {
         onMouseUp={handleThrow}
         onTouchStart={handleChargeStart}
         onTouchEnd={handleThrow}
-        disabled={ballState !== 'at-child'}
+        disabled={turnState !== 'ready' || ballState !== 'at-child'}
       >
-        {isCharging ? '놓아서 던지기!' : '눌러서 파워 모으기!'}
+        {turnState === 'charging' ? '놓아서 던지기!' : '눌러서 파워 모으기!'}
       </button>
     </div>
   );

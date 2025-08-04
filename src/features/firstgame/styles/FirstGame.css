@@ -1,158 +1,285 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
-/* 페이지 배경 설정 (body 대신 사용) */
-.first-game-background {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-    background: linear-gradient(135deg, #a2d2ff 0%, #bde0fe 100%);
-    font-family: 'Poor Story', cursive;
-    box-sizing: border-box;
+/* 전체 페이지 */
+.first-game-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f0f4f8; /* 밝고 부드러운 배경색 */
 }
 
-/* 메인 게임 컨테이너 */
-.first-game-container {
-    width: 100%;
-    max-width: 500px;
-    background: white;
-    padding: clamp(20px, 5vw, 40px);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    box-sizing: border-box;
+/* 설명 페이지 */
+.explanation-container {
+  background-color: white;
+  padding: 35px 40px;
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.explanation-container h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.explanation-container .icon {
+  margin-right: 12px;
+  font-size: 1.8rem;
+  transform: translateY(-2px);
+}
+.explanation-container p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #495057;
+  margin: 20px 0 30px 0;
+}
+.explanation-buttons {
+  display: flex;
+  gap: 12px;
+}
+.start-button, .back-button {
+  flex-grow: 1;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+.start-button {
+  background-color: #20c997;
+  color: white;
+}
+.back-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
 }
 
-.game-title {
-    font-size: clamp(2rem, 6vw, 2.8rem);
-    color: #333;
-    margin: 0 0 10px 0;
+/* 게임 페이지 */
+.game-container {
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+}
+.feedback-correct {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 4rem;
+  color: #fcc419;
+  z-index: 10;
+  border-radius: 20px;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+.game-prompt {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #343a40;
+  margin-bottom: 40px;
+}
+.cards-container {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+}
+.parent-guide {
+  margin-top: 40px;
+  font-size: 1rem;
+  color: #868e96;
 }
 
-.game-instruction {
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    color: #666;
-    margin-bottom: 30px;
+/* QuizCard.js 내부의 div를 위한 스타일 */
+.quiz-card {
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.quiz-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.quiz-card img {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+}
+.quiz-card p {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #343a40;
+  margin: 0;
 }
 
-.quiz-image {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* 종료 모달 */
+.game-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.game-modal-content {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 380px;
+}
+.game-modal-content h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #212529;
+}
+.stamp-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 32px;
+  min-height: 100px;
+}
+.stamp-image {
+  width: 80px;
+  height: 80px;
+  margin: 5px;
+}
+.no-stamp-message {
+  font-size: 1rem;
+  color: #868e96;
+  font-weight: 500;
+}
+.assistance-final-container {
+  margin-bottom: 32px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 24px;
+}
+.assistance-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 16px;
+}
+.assistance-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.assistance-buttons button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 2px solid #e9ecef;
+  background-color: #f8f9fa;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+.assistance-buttons button:hover {
+  background-color: #e9ecef;
+}
+.assistance-buttons button.selected {
+  background-color: #20c997;
+  color: white;
+  border-color: #20c997;
+  font-weight: 700;
+}
+.game-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.game-modal-button {
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+.game-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.game-exit-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border-color: #dee2e6;
+}
+.game-play-again-button {
+  background-color: #20c997;
+  color: white;
 }
 
-.answer-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-}
-
-.answer-button {
-    padding: 10px;
-    border: 3px solid #e0e0e0;
-    border-radius: 15px;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.answer-button:hover:not(:disabled) {
-    transform: translateY(-3px);
-    border-color: #5c67f2;
-}
-
-.answer-choice-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.answer-button.correct {
-    background-color: #c8e6c9;
-    border-color: #28a745;
-}
-
-.answer-button.incorrect {
-    background-color: #ffcdd2;
-    border-color: #dc3545;
-}
-
-.answer-button.disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-}
-
-/* 결과 창 스타일 */
-.modal-like-result {
-    padding: 20px;
-}
-
-.result-title {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    color: #333;
-}
-
-.result-score {
+/* 반응형 */
+@media (max-width: 700px) {
+  .quiz-card {
+    width: 150px;
+    height: 150px;
+  }
+  .quiz-card img {
+    max-width: 80px;
+    max-height: 80px;
+  }
+  .quiz-card p {
     font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 1rem;
+  }
 }
 
-.result-coin {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #ffc107;
-    margin-bottom: 30px;
-}
-
-.result-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-}
-
-/* 공통 버튼 스타일 */
-.btn {
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-family: 'Poor Story', cursive;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.btn-replay {
-    background-color: #5c67f2;
-    color: white;
-}
-
-.btn-exit {
-    background-color: #e9ecef;
-    color: #495057;
-}
-
-/* 상태 메시지 */
-.status-message.error {
-    color: #ff6b6b;
-    font-size: 1.5rem;
-    padding: 2rem;
-    text-align: center;
-    width: 100%;
+@media (max-width: 540px) {
+  .cards-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  .quiz-card {
+    width: 80%;
+    max-width: 250px;
+  }
 }

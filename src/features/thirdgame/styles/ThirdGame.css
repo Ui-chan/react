@@ -1,193 +1,312 @@
-body {
-  background: linear-gradient(135deg, #a2d2ff 0%, #bde0fe 100%);
-  overflow: hidden;
-}
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 .third-game-page {
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
   min-height: 100vh;
   padding: 20px;
-}
-
-.third-game-card-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-  width: 100%;
-  max-width: 800px;
-  perspective: 1200px;
-}
-
-.third-game-card {
-  position: relative;
-  background-color: transparent;
-  cursor: pointer;
-  aspect-ratio: 1 / 1;
-}
-
-.third-game-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.7s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  transform-style: preserve-3d;
-  border-radius: 15px;
-}
-
-.third-game-card.flipped .third-game-card-inner {
-  transform: rotateY(180deg);
-}
-
-.third-game-card-front, .third-game-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border-radius: 15px;
-  overflow: hidden;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-}
-
-.third-game-card-front {
-  background-color: #fff;
-  transform: rotateY(180deg);
-}
-
-.third-game-card-front img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.third-game-card-back {
-  background-color: #ffafcc;
-  border: 5px solid white;
   box-sizing: border-box;
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.2) 0,
-    rgba(255, 255, 255, 0.2) 5px,
-    transparent 5px,
-    transparent 10px
-  );
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f0f4f8;
+}
+
+/* 설명 페이지 */
+.game-explanation-container {
+  background-color: white;
+  padding: 35px 40px;
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.game-explanation-container h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 16px;
+}
+.game-explanation-container p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #495057;
+  margin: 20px 0 30px 0;
+}
+.game-buttons-container {
   display: flex;
-  justify-content: center;
+  gap: 12px;
+}
+.game-start-button, .game-back-button {
+  flex-grow: 1;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+}
+.game-start-button {
+  background-color: #20c997;
+  color: white;
+}
+.game-back-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+/* 게임 진행 페이지 */
+.third-game-container {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
   align-items: center;
 }
 
-.third-game-card-back::before {
-  content: '⭐️';
-  font-size: 4rem;
-  opacity: 0.9;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.game-area {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+  min-height: 450px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-.third-game-card.matched {
-  opacity: 0;
-  transform: scale(0.95);
-  transition: opacity 0.4s ease-in, transform 0.4s ease-in;
-  cursor: default;
+.turn-counter {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: white;
+  color: #343a40;
+  padding: 8px 15px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.third-game-status {
-  font-size: 1.8rem;
+/* 캐릭터 & 아이 */
+.character, .child {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.character {
+  top: 5%;
+  transition: transform 0.3s ease;
+}
+.character.happy {
+  animation: jiggle 0.5s;
+}
+
+.child {
+  bottom: 5%;
+}
+
+@keyframes jiggle {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  25% { transform: translateX(-50%) rotate(-5deg); }
+  75% { transform: translateX(-50%) rotate(5deg); }
+}
+
+/* 공 & 애니메이션 */
+.ball-container {
+  position: absolute;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  transform: translateX(-50%);
+  z-index: 4;
+}
+.ball-image {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.ball-container.at-character {
+  top: 18%;
+  animation: bob 2s infinite ease-in-out;
+}
+.ball-container.at-child {
+  top: 78%;
+  transition: top 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: bob 2s infinite ease-in-out 0.5s;
+}
+.ball-container.thrown {
+  animation: throw-arc 1.2s cubic-bezier(0.3, 0.7, 0.4, 1) forwards;
+}
+.ball-container.dropped {
+  animation: drop-fail 1.2s ease-out forwards;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+@keyframes throw-arc {
+  0% { top: 78%; transform: translateX(-50%) rotate(0deg); }
+  50% { top: 30%; transform: translateX(-50%) rotate(360deg); }
+  100% { top: 18%; transform: translateX(-50%) rotate(720deg); }
+}
+@keyframes drop-fail {
+  0% { top: 78%; }
+  30% { top: 70%; }
+  100% { top: 120%; }
+}
+
+/* 피드백 텍스트 */
+.throw-feedback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-weight: 900;
   color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  -webkit-text-stroke: 2px #333;
+  animation: feedback-pop 1.2s forwards;
 }
-.third-game-status.error {
-  color: #ff6b6b;
+@keyframes feedback-pop {
+  0%, 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20%, 80% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 }
 
-.modal-overlay {
+/* 파워 게이지 & 버튼 */
+.power-meter-container {
+  width: 100%;
+  padding: 0 10px;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+.power-meter-bar {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background-color: #e9ecef;
+  border-radius: 15px;
+  border: 3px solid #ced4da;
+  overflow: hidden;
+}
+.power-meter-fill {
+  height: 100%;
+  background: linear-gradient(to right, #ffe066, #ffc078);
+  border-radius: 12px;
+  transition: width 0.05s linear;
+}
+.power-meter-sweet-spot {
+  position: absolute;
+  top: 0;
+  left: 70%;
+  width: 20%;
+  height: 100%;
+  background-color: rgba(32, 201, 151, 0.5);
+}
+
+.throw-button {
+  width: 90%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: #f76707;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+}
+.throw-button:disabled {
+  background-color: #ced4da;
+  cursor: not-allowed;
+}
+
+/* 종료 모달 */
+.game-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.55);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(5px);
 }
-
-.result-modal {
+.game-modal-content {
   background: white;
-  padding: 40px;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  padding: 32px;
+  border-radius: 24px;
   text-align: center;
-  width: 90%;
-  max-width: 400px;
-  animation: fadeIn 0.5s ease-out;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 85%;
+  max-width: 340px;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+.game-modal-content h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #212529;
 }
-
-.modal-title {
-  font-size: 2.5rem;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.modal-text {
-  font-size: 1.2rem;
-  color: #666;
-  margin-bottom: 25px;
-}
-
-.duration-display {
-  background-color: #f7f7f7;
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 30px;
-  font-size: 1.1rem;
-}
-
-.duration-label {
-  color: #888;
-  margin-right: 10px;
-}
-
-.duration-time {
-  color: #333;
-  font-weight: bold;
-}
-
-.modal-buttons {
+.stamp-container {
   display: flex;
-  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 24px 0 32px 0;
+  min-height: 100px;
 }
-
-.btn {
-  border: none;
-  padding: 15px 30px;
-  border-radius: 50px;
+.stamp-image {
+  width: 80px;
+  height: 80px;
+  margin: 5px;
+}
+.no-stamp-message {
   font-size: 1rem;
-  font-weight: bold;
+  color: #868e96;
+  font-weight: 500;
+}
+.game-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.game-modal-button {
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  white-space: nowrap;
 }
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
-.btn-replay {
-  background-color: #5c67f2;
-  color: white;
-}
-
-.btn-exit {
-  background-color: #e9ecef;
+.game-exit-button {
+  background-color: #f1f3f5;
   color: #495057;
+  border-color: #dee2e6;
+}
+.game-play-again-button {
+  background-color: #20c997;
+  color: white;
 }

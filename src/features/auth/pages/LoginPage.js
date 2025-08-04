@@ -1,14 +1,10 @@
 // src/features/auth/pages/LoginPage.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-// LoginForm 컴포넌트 경로 확인
 import LoginForm from '../components/LoginForm'; 
-
-// CSS 파일 경로: src/features/auth/pages에서 src/styles/LoginPage.css로 이동
 import '../../../styles/LoginPage.css'; 
+// import zerodose_img from '../../assets/zerodose_logo.svg'; // 이 라인을 삭제합니다.
 
-// 이미지 경로 확인
-import zerodose_img from '../../assets/zerodose_logo.svg'; 
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -19,14 +15,13 @@ function LoginPage() {
 
   const handleLoginSuccess = () => {
     console.log('로그인 성공! 홈페이지로 이동합니다.');
-    navigate('/homepage');
+    navigate('/homechild');
   };
 
   return (
-    // 이곳의 className을 'login-page-container'에서 'login-container'로 수정합니다.
     <div className="login-container"> 
       <img
-        src={zerodose_img}
+        src="/assets/zerodose_logo.svg" // 경로를 public 폴더 기준으로 수정
         alt="ZeroDose Logo"
         className="top-left-icon"
         onClick={handleIconClick}

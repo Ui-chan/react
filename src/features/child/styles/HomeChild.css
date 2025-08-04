@@ -1,6 +1,7 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 .home-child-layout {
+  position: relative;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -36,6 +37,29 @@
   position: relative;
 }
 
+/* --- 변경 버튼 스타일 추가 --- */
+.change-view-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #495057;
+  background-color: white;
+  border: 1px solid #dee2e6;
+  border-radius: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+.change-view-button:hover {
+  background-color: #f1f3f5;
+  border-color: #ced4da;
+}
+
+
 .playroom {
   position: relative;
   width: 100%;
@@ -60,7 +84,6 @@
   user-select: none;
   z-index: 5;
 }
-
 .draggable-character:active {
   cursor: grabbing;
   transform: scale(1.05);
@@ -75,7 +98,6 @@
   color: #fa5252;
 }
 
-/* 꾸미기 버튼 스타일 */
 .custom-button {
   position: absolute;
   bottom: 30px;
@@ -99,7 +121,6 @@
   transform: translateY(-3px);
 }
 
-/* 꾸미기 패널(모달) 스타일 */
 .custom-panel-overlay {
   position: fixed;
   top: 0;
@@ -170,7 +191,6 @@
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
   z-index: 10;
 }
-
 .nav-item {
   display: flex;
   flex-direction: column;
@@ -185,12 +205,10 @@
   transition: color 0.2s ease;
   flex: 1;
 }
-
 .nav-icon {
   font-size: 1.8rem;
   margin-bottom: 4px;
 }
-
 .nav-item.active {
   color: #20c997;
   font-weight: 700;

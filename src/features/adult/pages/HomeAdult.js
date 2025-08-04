@@ -10,7 +10,7 @@ const navItems = [
     { id: 'parentEdu', icon: '📚', label: '부모 교육' }, // parentEdu로 유지
   ];
 
-function HomeAdult() { // 컴포넌트 이름 변경
+function HomeAdult() {
     const navigate = useNavigate();
     // TODO: 실제 로그인된 부모/아이 정보를 API로 불러와야 합니다.
     const [userInfo, setUserInfo] = useState({
@@ -24,7 +24,11 @@ function HomeAdult() { // 컴포넌트 이름 변경
     });
 
     const handleNavClick = (path) => {
-        if (path === 'homepage') return;
+        // 'homeadult'가 현재 페이지이므로, Router.js의 경로와 일치하는 'homepage'로 수정
+        if (path === 'homeadult') {
+            navigate('/homeadult'); // Router.js의 경로에 맞게 수정
+            return;
+        };
         navigate(`/${path}`);
     };
 
@@ -35,6 +39,11 @@ function HomeAdult() { // 컴포넌트 이름 변경
             </header>
 
             <main className="adult-page-content">
+                {/* --- 변경 버튼 추가 --- */}
+                <button className="change-view-button" onClick={() => navigate('/homechild')}>
+                    변경
+                </button>
+
                 {/* 프로필 카드 */}
                 <section className="profile-card">
                     <div className="profile-image-wrapper">
@@ -113,4 +122,4 @@ function HomeAdult() { // 컴포넌트 이름 변경
     );
 }
 
-export default HomeAdult; // 컴포넌트 이름 변경
+export default HomeAdult;

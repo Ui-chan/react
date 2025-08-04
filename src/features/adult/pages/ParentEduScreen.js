@@ -12,7 +12,7 @@ const navItems = [
 
 // P-ESDM 교육 영상 데이터 (요청하신 영상으로 교체)
 const eduVideos = [
-    { id: 1, title: '자폐 아동과의 놀이 상호작용 팁', videoId: 'yfC4xh0nHwg' },
+    { id: 1, title: 'What is ESDM', videoId: 'xkRwDOFbcAo' },
     { id: 2, title: 'ESDM: 부모가 알아야 할 핵심 원칙', videoId: 'XXQBIN9mCzE' },
     { id: 3, title: '공동 주시(Joint Attention) 훈련 방법', videoId: 'i4saReasm_g' },
     { id: 4, title: '언어 발달을 돕는 일상 속 대화 기술', videoId: '6GY3pLK6MrI' },

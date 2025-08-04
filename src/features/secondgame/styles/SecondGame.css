@@ -1,160 +1,333 @@
-@import url('https://fonts.googleapis.com/css2?family=Poor+Story&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
-.second-game-background {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-    background: linear-gradient(135deg, #a2d2ff 0%, #bde0fe 100%);
-    font-family: 'Poor Story', cursive;
-    box-sizing: border-box;
+/* 전체 페이지 */
+.second-game-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f0f4f8;
 }
 
+/* 설명 페이지 */
+.game-explanation-container {
+  background-color: white;
+  padding: 35px 40px;
+  border-radius: 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 500px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.game-explanation-container h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-explanation-container p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #495057;
+  margin: 20px 0 30px 0;
+}
+
+.game-buttons-container {
+  display: flex;
+  gap: 12px;
+}
+
+.game-start-button, .game-back-button {
+  flex-grow: 1;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.game-start-button {
+  background-color: #20c997;
+  color: white;
+}
+
+.game-back-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+/* 게임 진행 페이지 */
 .second-game-container {
-    width: 100%;
-    max-width: 500px;
-    background: white;
-    padding: clamp(20px, 5vw, 40px);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    box-sizing: border-box;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.game-title {
-    font-size: clamp(2rem, 6vw, 2.8rem);
-    color: #333;
-    margin: 0 0 10px 0;
+.emotion-display {
+  background-color: #ffffff;
+  border-radius: 24px;
+  padding: 40px;
+  margin-bottom: 30px;
+  width: 100%;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
-.game-instruction {
-    font-size: clamp(1rem, 3vw, 1.2rem);
-    color: #666;
-    margin-bottom: 30px;
+.emotion-emoji {
+  font-size: 8rem;
+  line-height: 1;
+  margin-bottom: 20px;
 }
 
-.quiz-image {
-    width: 100%;
-    height: auto;
-    /* --- 이 부분을 수정했습니다 --- */
-    /* 고정 종횡비와 object-fit 제거 */
-    /* aspect-ratio: 4 / 3; */
-    /* object-fit: contain; */
-    
-    /* 이미지 주변에 약간의 공간(테두리 효과)을 주기 위한 스타일 */
-    padding: 10px;
-    background-color: #f8f9fa; /* 이미지 배경에 연한 색 추가 */
-    border-radius: 15px;
-    margin-bottom: 30px;
-    box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+.emotion-prompt {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #343a40;
 }
 
-.answer-options {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+.camera-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 4 / 3;
+  margin-bottom: 30px;
+  background-color: #e9ecef;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.answer-button {
-    padding: 10px;
-    border: 3px solid #e0e0e0;
-    border-radius: 15px;
-    background-color: white;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    aspect-ratio: 1 / 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
 }
 
-.answer-button:hover:not(:disabled) {
-    transform: translateY(-3px);
-    border-color: #5c67f2;
+.camera-permission-overlay {
+  padding: 20px;
+  color: #495057;
+  font-weight: 500;
+  font-size: 1.1rem;
+  text-align: center;
 }
 
-.answer-choice-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+.camera-error-message {
+  color: #fa5252;
+  line-height: 1.5;
 }
 
-.answer-button.correct {
-    background-color: #c8e6c9;
-    border-color: #28a745;
+.sparkle-effect {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle at 10% 20%, #ffffff80, transparent 20%),
+    radial-gradient(circle at 80% 30%, #ffffff80, transparent 20%),
+    radial-gradient(circle at 25% 75%, #ffffff80, transparent 20%),
+    radial-gradient(circle at 90% 80%, #ffffff80, transparent 20%);
+  animation: sparkle-animation 1s ease-in-out forwards;
+  pointer-events: none;
 }
 
-.answer-button.incorrect {
-    background-color: #ffcdd2;
-    border-color: #dc3545;
+@keyframes sparkle-animation {
+  0% { opacity: 0; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1.2); }
 }
 
-.answer-button.disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+.confirm-button {
+  width: 100%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  padding: 20px;
+  border-radius: 20px;
+  border: none;
+  background-color: #12b886;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(18, 184, 134, 0.3);
 }
 
-.modal-like-result {
-    padding: 20px;
+.confirm-button:disabled {
+  background-color: #ced4da;
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
-.result-title {
-    font-size: 2.5rem;
-    margin-bottom: 10px;
-    color: #333;
+.confirm-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(18, 184, 134, 0.4);
 }
 
-.result-score {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 1rem;
+.confirm-button:disabled:hover {
+  transform: none;
 }
 
-.result-coin {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #ffc107;
-    margin-bottom: 30px;
+.game-parent-guide {
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #868e96;
 }
 
-.result-buttons {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
+/* 공통 피드백/모달 스타일 */
+.game-feedback-correct {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 4rem;
+  color: #fcc419;
+  z-index: 10;
 }
 
-.btn {
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-family: 'Poor Story', cursive;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
+.game-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.game-modal-content {
+  background: white;
+  padding: 40px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 90%;
+  max-width: 380px;
 }
 
-.btn-replay {
-    background-color: #5c67f2;
-    color: white;
+.game-modal-content h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #212529;
 }
 
-.btn-exit {
-    background-color: #e9ecef;
-    color: #495057;
+.stamp-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 32px;
+  min-height: 100px;
 }
 
-.status-message.error {
-    color: #ff6b6b;
-    font-size: 1.5rem;
-    padding: 2rem;
-    text-align: center;
-    width: 100%;
+.stamp-image {
+  width: 80px;
+  height: 80px;
+  margin: 5px;
+}
+
+.no-stamp-message {
+  font-size: 1rem;
+  color: #868e96;
+  font-weight: 500;
+}
+
+/* --- 도움 수준 선택 UI (종료 모달) 스타일 추가 --- */
+.assistance-final-container {
+  margin-bottom: 32px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 24px;
+}
+.assistance-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 16px;
+}
+.assistance-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.assistance-buttons button {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 2px solid #e9ecef;
+  background-color: #f8f9fa;
+  color: #495057;
+  transition: all 0.2s ease;
+}
+.assistance-buttons button:hover {
+  background-color: #e9ecef;
+}
+.assistance-buttons button.selected {
+  background-color: #20c997;
+  color: white;
+  border-color: #20c997;
+  font-weight: 700;
+}
+
+.game-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.game-modal-button {
+  padding: 12px 28px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.game-modal-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-exit-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border-color: #dee2e6;
+}
+
+.game-play-again-button {
+  background-color: #20c997;
+  color: white;
 }

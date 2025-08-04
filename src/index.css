@@ -1,3 +1,15 @@
+/* --- 화면 드래그 및 줌 방지 --- */
+html,
+body,
+#root {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+/* --- 기본 스타일 리셋 --- */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -10,4 +22,13 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* --- 특정 영역 스크롤 허용을 위한 클래스 --- */
+/* 스크롤이 필요한 컴포넌트의 메인 div에 이 클래스를 추가하세요 (예: shop-content) */
+.scrollable-content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 효과 */
+  position: static; /* position: fixed를 해제 */
+  height: 100%;
 }

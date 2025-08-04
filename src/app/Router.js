@@ -1,25 +1,30 @@
-// Router.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 
-// Corrected Paths (all paths now correctly go up one level to 'src' then down to their respective directories)
+// Corrected Paths
 import LoginPage from '../features/auth/pages/LoginPage';
 import SignupPage from '../features/auth/pages/SignupPage';
 import HomePage from './HomePage';
 import App from './App';
 
-import BehaviorLogScreen from '../features/adult/pages/BehaviorLogScreen';
+import Survey from '../features/adult/pages/Survey';
 import ParentEduScreen from '../features/adult/pages/ParentEduScreen';
-import PlayScreen from '../features/adult/pages/PlayScreen';
+
+// --- 1. PlayScreen import 경로를 child 폴더로 변경 ---
+import PlayScreen from '../features/child/pages/PlayScreen'; 
+import StampScreen from '../features/child/pages/StampScreen'; 
+import ShopPage from '../features/child/pages/ShopPage'; 
+import HomeChild from '../features/child/pages/HomeChild'; 
+
+import HomeAdult from '../features/adult/pages/HomeAdult'; 
 import StatsScreen from '../features/adult/pages/StatsScreen';
-import ShopScreen from '../features/adult/pages/ShopScreen';
-import CustomScreen from '../features/adult/pages/CustomScreen';
-import AchievementScreen from '../features/adult/pages/AchievementScreen'; // AchievementScreen 임포트 추가
+
 
 import BottomNavigation from '../components/BottomNavigation';
-import ThirdGamePage from '../features/thirdgame/pages/ThirdGamePage';
 import FirstGamePage from '../features/firstgame/pages/FirstGamePage';
 import SecondGamePage from '../features/secondgame/pages/SecondGamePage';
+import ThirdGamePage from '../features/thirdgame/pages/ThirdGamePage';
+import FourthGamePage from '../features/fourthgame/pages/FourthGamePage';
 
 function AppRouter() {
   return (
@@ -45,69 +50,47 @@ function MainRoutes() {
 
   return (
     <Routes>
+      {/* 루트 접속 시 /login으로 리다이렉트 */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+
       {/* 로그인 */}
       <Route path="/login" element={<LoginPage />} />
 
-      {/* 회원가입 라우트 추가 */}
+      {/* 회원가입 */}
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* 홈 화면 (하단바 포함) */}
+      {/* 홈 (하단바 포함) */}
       <Route
         path="/homepage"
         element={withBottomNav(HomePage, 'home')}
       />
 
-      {/* 행동 기록 화면 (하단바 포함) */}
-      <Route
-        path="/behaviorLog"
-        element={withBottomNav(BehaviorLogScreen, 'behaviorLog')}
-      />
 
-      {/* 게임 화면 추가 (하단바 제외) */}
+      {/* 게임 페이지들 (하단바 없음) */}
       <Route path="/firstgame" element={<FirstGamePage />} />
       <Route path="/secondgame" element={<SecondGamePage />} />
+      <Route path="/thirdgame" element={<ThirdGamePage />} />
+      <Route path="/fourthgame" element={<FourthGamePage />} />
 
-      {/* 부모 교육 화면 (하단바 포함) */}
-      <Route
-        path="/parentEdu"
-        element={withBottomNav(ParentEduScreen, 'parentEdu')}
-      />
+      {/* 부모 교육 (하단바 포함) */}
+      <Route path="/survey" element={<Survey />} />
 
-      {/* 플레이 화면 (하단바 제외) */}
-      <Route
-        path="/play"
-        element={<PlayScreen onNavClick={handleNavClick} currentScreen={'play'} />}
-      />
+      <Route path="/parentedu" element={<ParentEduScreen />} />
 
-      {/* 통계 화면 (하단바 포함) */}
-      <Route
-        path="/stats"
-        element={withBottomNav(StatsScreen, 'stats')}
-      />
+      {/* 플레이 화면 */}
+      <Route path="/play" element={<PlayScreen />} />
 
-      {/* 상점 화면 (하단바 제외) */}
-      <Route
-        path="/shop"
-        element={<ShopScreen onNavClick={handleNavClick} currentScreen={'shop'} />}
-      />
+      <Route path="/stamp" element={<StampScreen />} />
 
-      {/* 커스텀 화면 (하단바 제외) - CustomScreen만 직접 렌더링 */}
-      <Route
-        path="/custom"
-        element={<CustomScreen onNavClick={handleNavClick} currentScreen={'custom'} />}
-      />
+      <Route path="/shop" element={<ShopPage />} />
 
-      {/* 업적 화면 (하단바 제외) - AchievementScreen 추가 */}
-      <Route
-        path="/achievement"
-        element={<AchievementScreen onNavClick={handleNavClick} currentScreen={'achievement'} />}
-      />
+      <Route path="/homechild" element={<HomeChild />} />
 
-      {/* 카드 게임 화면 */}
-      <Route path="/cardgame" element={<ThirdGamePage />} />
-
-      {/* 기본 경로 */}
-      <Route path="/" element={<App />} />
+      <Route path="/homeadult" element={<HomeAdult />} />
+      
+      <Route path="/stats" element={<StatsScreen />} />
+      
+      
     </Routes>
   );
 }

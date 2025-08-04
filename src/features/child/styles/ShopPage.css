@@ -1,0 +1,181 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+
+.stamp-screen-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  background-color: #f8f9fa;
+  overflow: hidden;
+}
+
+.stamp-screen-header {
+  flex-shrink: 0;
+  padding: 15px 20px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: left;
+  z-index: 10;
+}
+
+.header-logo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #343a40;
+  margin: 0;
+}
+
+.shop-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  text-align: center;
+  padding: 25px 20px;
+}
+
+.content-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 20px;
+}
+
+.summary-box {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  padding: 20px;
+  margin: 0 auto 30px auto;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+.summary-username { font-size: 1rem; color: #868e96; }
+.summary-count { font-size: 1.5rem; font-weight: 700; color: #343a40; }
+.summary-count span { color: #fab005; font-size: 1.8rem; }
+
+.item-sections-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.item-section { margin-bottom: 30px; }
+.section-title { font-size: 1.5rem; font-weight: 700; color: #212529; text-align: left; margin-bottom: 15px; }
+.item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+
+.item-card {
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 10px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer; /* 클릭 가능함을 표시 */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+.item-image-container { width: 100%; aspect-ratio: 1 / 1; background-color: #f1f3f5; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.item-image-container img { width: 90%; height: 90%; object-fit: contain; }
+.item-name { font-size: 1rem; font-weight: 600; color: #343a40; margin-bottom: 8px; text-transform: capitalize; }
+
+/* 구매 버튼을 div로 변경하여 클릭 이벤트가 카드로 가도록 함 */
+.buy-button {
+  background-color: #20c997;
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: auto;
+}
+
+.status-text { padding: 50px; text-align: center; font-size: 1.2rem; color: #868e96; }
+.status-text.error { color: #fa5252; }
+
+/* --- 아이템 상세 모달 스타일 추가 --- */
+.shop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.shop-modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+  width: 90%;
+  max-width: 400px;
+}
+.modal-image-container {
+  width: 100%;
+  height: 250px;
+  margin-bottom: 20px;
+}
+.modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.modal-item-name {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0 0 25px 0;
+}
+.modal-actions {
+  display: flex;
+  gap: 15px;
+}
+.modal-button {
+  flex: 1;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.close-button {
+  background-color: #e9ecef;
+  color: #495057;
+}
+.purchase-button {
+  background-color: #20c997;
+  color: white;
+}
+.purchase-button:hover {
+  filter: brightness(1.1);
+}
+
+/* 하단 네비게이션 바 */
+.bottom-navigation {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 10px 0;
+  background-color: white;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; color: #868e96; font-size: 0.8rem; font-weight: 500; transition: color 0.2s ease; flex: 1; }
+.nav-icon { font-size: 1.8rem; margin-bottom: 4px; }
+.nav-item.active { color: #20c997; font-weight: 700; }

@@ -1,172 +1,229 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import QuizCard from '../components/QuizCard';
-import LoadingIndicator from '../../../components/common/LoadingIndicator';
+import QuizCard from '../components/FirstGame';
 import '../styles/FirstGame.css';
 
-const FirstGamePage = () => {
-    // --- 상태 관리 ---
-    const [quizzes, setQuizzes] = useState([]);
-    const [emotionImages, setEmotionImages] = useState({}); // 감정 이미지 URL 맵
-    const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
-    const [score, setScore] = useState(0);
-    const [userChoice, setUserChoice] = useState(null);
-    const [showResult, setShowResult] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const gameData = [
+  {
+    prompt: "🍎 빨간 사과는 어디 있지?",
+    correctAnswer: "사과",
+    items: [
+      { name: "사과", image: "/assets/apple.png" },
+      { name: "자동차", image: "/assets/car.png" },
+      { name: "오리", image: "/assets/duck.png" },
+    ],
+  },
+  {
+    prompt: "🍌 노란 바나나는 어디 있지?",
+    correctAnswer: "바나나",
+    items: [
+      { name: "공", image: "/assets/ball.png" },
+      { name: "바나나", image: "/assets/banana.png" },
+      { name: "집", image: "/assets/house.png"   },
+    ],
+  },
+  {
+    prompt: "🌃 밤 그림은 어디 있지?",
+    correctAnswer: "밤",
+    items: [
+      { name: "낮", image: "/assets/day.png" },
+      { name: "밤", image: "/assets/night.png" },
+      { name: "자동차", image: "/assets/car.png" },
+    ],
+  },
+];
 
-    // --- Hooks ---
-    const navigate = useNavigate();
-    const hasFetched = useRef(false);
-    const questionStartTime = useRef(null);
-    const quizUserId = 11; // 퀴즈 생성용 ID
-    const itemUserId = 2;  // 아이템(감정 이미지)용 ID
+function FirstGamePage() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [feedback, setFeedback] = useState('');
+  const [isGameFinished, setIsGameFinished] = useState(false);
+  const navigate = useNavigate();
 
-    // --- 새 게임 시작 및 데이터 로딩 함수 ---
-    const startNewGame = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        setQuizzes([]);
-        setEmotionImages({});
-        setCurrentQuizIndex(0);
-        setScore(0);
-        setUserChoice(null);
-        setShowResult(false);
+  const [sessionId, setSessionId] = useState(null);
+  const [questionStartTime, setQuestionStartTime] = useState(null);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
 
-        try {
-            // 두 API를 동시에 호출
-            const [quizResponse, emotionImgResponse] = await Promise.all([
-                axios.post('http://127.0.0.1:8000/api/quiz/firstgame/create/', { user_id: quizUserId }),
-                axios.post('http://127.0.0.1:8000/api/item/userid-to-emotions/', { user_id: itemUserId })
-            ]);
+  const currentQuestion = gameData[currentQuestionIndex];
 
-            // 1. 퀴즈 데이터 설정
-            setQuizzes(quizResponse.data);
+  const handleStartGame = async () => {
+    try {
+      const response = await fetch('/api/games/session/start/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: 2, game_id: 1 }),
+      });
+      if (!response.ok) throw new Error('Failed to start session');
+      
+      const data = await response.json();
+      setSessionId(data.session_id);
+      setGameStarted(true);
+      setIsGameFinished(false);
+      setCurrentQuestionIndex(0);
+      setCorrectAnswers(0);
+      setFinalAssistanceLevel(null);
+    } catch (error) {
+      console.error("Error starting game session:", error);
+      alert("게임 세션을 시작하는 데 실패했습니다.");
+    }
+  };
 
-            // 2. 감정 이미지 데이터 처리 및 설정
-            const imageUrls = emotionImgResponse.data.item_detail_img;
-            const imageMap = {};
-            const emotionMapping = {
-                happy: '기쁨',
-                cry: '슬픔',
-                angry: '화남',
-                surprise: '놀람'
-            };
+  useEffect(() => {
+    if (gameStarted && !isGameFinished) {
+      setQuestionStartTime(Date.now());
+    }
+  }, [gameStarted, currentQuestionIndex, isGameFinished]);
 
-            imageUrls.forEach(url => {
-                const emotionKey = Object.keys(emotionMapping).find(key => url.includes(`_${key}.png`));
-                if (emotionKey) {
-                    const koreanEmotion = emotionMapping[emotionKey];
-                    imageMap[koreanEmotion] = url;
-                }
-            });
-            setEmotionImages(imageMap);
+  const handleAnswerClick = async (itemName) => {
+    if (feedback) return;
 
-        } catch (err) {
-            setError('퀴즈를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [quizUserId, itemUserId]);
-
-    // --- 컴포넌트 마운트 시 최초 게임 시작 ---
-    useEffect(() => {
-        if (!hasFetched.current) {
-            hasFetched.current = true;
-            startNewGame();
-        }
-    }, [startNewGame]);
-
-    // --- 새 문제가 표시될 때마다 시작 시간 기록 ---
-    useEffect(() => {
-        if (!loading && quizzes.length > 0) {
-            questionStartTime.current = Date.now();
-        }
-    }, [currentQuizIndex, loading, quizzes]);
-
-
-    // --- 결과 저장 함수 ---
-    const saveQuestionResult = async (resultData) => {
-        try {
-            await axios.post('http://127.0.0.1:8000/api/quiz/firstgame/save/', resultData);
-        } catch (err) {
-            console.error('결과 저장에 실패했습니다:', err);
-        }
+    const isSuccessful = itemName === currentQuestion.correctAnswer;
+    if (isSuccessful) {
+      setCorrectAnswers(prevCount => prevCount + 1);
+    }
+    
+    const logData = {
+      session_id: sessionId,
+      is_successful: isSuccessful,
+      response_time_ms: Date.now() - questionStartTime,
+      interaction_data: {
+        prompt_text: currentQuestion.prompt,
+        target_item: currentQuestion.correctAnswer,
+        selected_item: itemName,
+        all_items: currentQuestion.items.map(i => i.name),
+      }
     };
 
-    // --- 이벤트 핸들러 ---
-    const handleAnswerClick = (selectedAnswer) => {
-        if (userChoice) return;
+    try {
+      const response = await fetch('/api/games/interaction/log/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData),
+      });
+      if (!response.ok) throw new Error('Failed to log interaction');
 
-        const endTime = Date.now();
-        const durationInSeconds = ((endTime - (questionStartTime.current || endTime)) / 1000).toFixed(2);
-        const currentQuiz = quizzes[currentQuizIndex];
-        const isCorrect = selectedAnswer === currentQuiz.correct_answer;
+      if (isSuccessful) {
+        setFeedback('correct');
+      }
 
-        const resultData = {
-            user_id: quizUserId,
-            quiz_type: 1,
-            quiz_id: currentQuiz.quiz_id,
-            selected: selectedAnswer,
-            is_correct: isCorrect ? 1 : 0,
-            duration_seconds: parseFloat(durationInSeconds),
-            emotion: currentQuiz.correct_answer,
-        };
-        saveQuestionResult(resultData);
-
-        setUserChoice(selectedAnswer);
-        if (isCorrect) {
-            setScore(prev => prev + 1);
+      setTimeout(() => {
+        setFeedback('');
+        if (currentQuestionIndex < gameData.length - 1) {
+          setCurrentQuestionIndex(currentQuestionIndex + 1);
+        } else {
+          setIsGameFinished(true);
         }
+      }, isSuccessful ? 1500 : 500);
 
-        setTimeout(() => {
-            if (currentQuizIndex < quizzes.length - 1) {
-                setCurrentQuizIndex(prev => prev + 1);
-            } else {
-                setShowResult(true);
-            }
-            setUserChoice(null);
-        }, 1500);
-    };
+    } catch (error) {
+      console.error("Error logging interaction:", error);
+      alert("게임 기록 저장에 실패했습니다.");
+    }
+  };
 
-    const handlePlayAgain = () => startNewGame();
-    const handleExit = () => navigate('/');
+  const endCurrentSession = async () => {
+    if (!sessionId) return;
+    try {
+      await fetch('/api/games/first-game/session/end/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          session_id: sessionId, 
+          correct_answers: correctAnswers,
+          assistance_level: finalAssistanceLevel
+        }),
+      });
+      setSessionId(null);
+    } catch (error) {
+      console.error("Error ending session:", error);
+    }
+  };
 
-    if (loading) return <LoadingIndicator />;
-    if (error) return <div className="status-message error">{error}</div>;
+  const handleExit = async () => {
+    await endCurrentSession();
+    navigate('/play/');
+  };
 
-    return (
-        <div className="first-game-background">
-            <div className="first-game-container">
-                {!showResult ? (
-                    <>
-                        <h1 className="game-title">표정 퀴즈!</h1>
-                        <p className="game-instruction">사진 속 친구는 어떤 표정일까요?</p>
-                        {quizzes.length > 0 && Object.keys(emotionImages).length > 0 && (
-                            <QuizCard
-                                quiz={quizzes[currentQuizIndex]}
-                                onAnswerClick={handleAnswerClick}
-                                userChoice={userChoice}
-                                emotionImages={emotionImages}
-                            />
-                        )}
-                    </>
-                ) : (
-                    <div className="modal-like-result">
-                        <h1 className="result-title">🎉 참 잘했어요! 🎉</h1>
-                        <p className="result-score">총 {quizzes.length}문제 중 {score}문제를 맞혔어요!</p>
-                        <p className="result-coin">💰 {score}코인 획득!</p>
-                        <div className="result-buttons">
-                            <button onClick={handlePlayAgain} className="btn btn-replay">다시 풀기</button>
-                            <button onClick={handleExit} className="btn btn-exit">나가기</button>
-                        </div>
-                    </div>
-                )}
-            </div>
+  const handlePlayAgain = async () => {
+    await endCurrentSession();
+    setIsGameFinished(false);
+    setGameStarted(false);
+  };
+  
+  const renderExplanationPage = () => (
+    <div className="explanation-container">
+      <h1><span className="icon" role="img" aria-label="magnifying glass">🔎</span> '저기 봐!' 놀이</h1>
+      <p>
+        이 놀이는 아이와 함께 화면의 사물을 보며 <br />
+        '저기 있네!' 하는 즐거움을 배우는 시간이에요. <br />
+        아이가 사물에 시선을 맞추면 부모님이 칭찬과 함께 탭해주세요. <br />
+        <strong>공동 주시(Joint Attention)</strong> 능력을 키우는 데 도움이 됩니다.
+      </p>
+      <div className="explanation-buttons">
+        <button onClick={() => navigate('/play/')} className="back-button">뒤로가기</button>
+        <button onClick={handleStartGame} className="start-button">놀이 시작하기</button>
+      </div>
+    </div>
+  );
+
+  const renderGamePage = () => (
+    <div className="game-container">
+      {feedback === 'correct' && <div className="feedback-correct"><h1>딩동댕! 🎉</h1></div>}
+      <h2 className="game-prompt">{currentQuestion.prompt}</h2>
+      <div className="cards-container">
+        {currentQuestion.items.map((item) => (
+          <QuizCard key={item.name} name={item.name} image={item.image} onClick={handleAnswerClick} />
+        ))}
+      </div>
+      <div className="parent-guide">부모님 가이드: 아이가 정답을 바라보면 대신 카드를 눌러주세요!</div>
+    </div>
+  );
+
+  const renderGameFinishedModal = () => (
+    <div className="game-modal-overlay">
+      <div className="game-modal-content">
+        <h2>참! 잘했어요!</h2>
+        <div className="stamp-container">
+          {correctAnswers > 0 ? (
+            Array.from({ length: correctAnswers }).map((_, index) => (
+              <img key={index} src="/assets/goodjob.png" alt="정답 스탬프" className="stamp-image" />
+            ))
+          ) : ( <p className="no-stamp-message">아쉽지만, 다음 기회에 스탬프를 모아봐요!</p> )}
         </div>
-    );
-};
+        
+        <div className="assistance-final-container">
+          <p className="assistance-title">게임 중 도움이 필요했나요?</p>
+          <div className="assistance-buttons">
+            <button 
+              className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
+              onClick={() => setFinalAssistanceLevel('NONE')}
+            >도움 없음</button>
+            <button 
+              className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
+              onClick={() => setFinalAssistanceLevel('VERBAL')}
+            >약간 도와줌</button>
+            <button 
+              className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
+              onClick={() => setFinalAssistanceLevel('PHYSICAL')}
+            >많이 도와줌</button>
+          </div>
+        </div>
+
+        <div className="game-modal-buttons">
+          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>나가기</button>
+          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>다시하기</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="first-game-page">
+      {!gameStarted ? renderExplanationPage() : renderGamePage()}
+      {isGameFinished && renderGameFinishedModal()}
+    </div>
+  );
+}
 
 export default FirstGamePage;

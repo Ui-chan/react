@@ -2,19 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/StampScreen.css';
 
-// 하단 네비게이션 아이콘 정보 (임시)
+// Bottom navigation icon information
 const navItems = [
-    { id: 'homechild', icon: '🏠', label: '홈' },
-    { id: 'play', icon: '🎮', label: '놀이' },
-    { id: 'stamp', icon: '🌟', label: '스탬프' },
-    { id: 'shop', icon: '🛒', label: '상점' },
+    { id: 'homechild', icon: '🏠', label: 'Home' },
+    { id: 'play', icon: '🎮', label: 'Play' },
+    { id: 'stamp', icon: '🌟', label: 'Stamps' },
+    { id: 'shop', icon: '🛒', label: 'Shop' },
 ];
 
-const STAMPS_PER_PAGE = 20; // 한 페이지에 20개 (5x4)
+const STAMPS_PER_PAGE = 20; // 20 stamps per page (5x4)
 
 function StampScreen() {
     const navigate = useNavigate();
-    const [stampInfo, setStampInfo] = useState({ username: '사용자', stamp_count: 0 });
+    const [stampInfo, setStampInfo] = useState({ username: 'User', stamp_count: 0 });
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
 
@@ -47,7 +47,6 @@ function StampScreen() {
         }
     };
 
-    // --- 페이지 넘기기 버튼 핸들러 추가 ---
     const handlePrevPage = () => {
         setCurrentPage(prev => Math.max(prev - 1, 0));
     };
@@ -63,15 +62,14 @@ function StampScreen() {
             </header>
 
             <main className="stamp-screen-content">
-                <h2 className="content-title">스탬프 북</h2>
+                <h2 className="content-title">Stamp Book</h2>
                 
                 <div className="stamp-summary-box">
-                    <div className="summary-username">{stampInfo.username} 어린이는</div>
-                    <div className="summary-count">총 <span>{stampInfo.stamp_count}</span>개의 스탬프를 모았어요!</div>
+                    <div className="summary-username">{stampInfo.username} has collected</div>
+                    <div className="summary-count">a total of <span>{stampInfo.stamp_count}</span> stamps!</div>
                 </div>
 
                 <div className="stamp-book-container">
-                    {/* --- 왼쪽 화살표 버튼 추가 --- */}
                     <button 
                         className="arrow-button prev-button" 
                         onClick={handlePrevPage}
@@ -83,7 +81,7 @@ function StampScreen() {
                     <div className="stamp-book">
                         <div className="stamp-pages" style={{ transform: `translateX(-${currentPage * 100}%)` }}>
                             {loading ? (
-                                <div className="stamp-page"><p>스탬프를 불러오는 중...</p></div>
+                                <div className="stamp-page"><p>Loading stamps...</p></div>
                             ) : (
                                 Array.from({ length: totalPages || 1 }).map((_, pageIndex) => (
                                     <div key={pageIndex} className="stamp-page">
@@ -93,7 +91,7 @@ function StampScreen() {
                                                 return (
                                                     <div key={overallIndex} className="stamp-item">
                                                         {overallIndex < stampInfo.stamp_count && (
-                                                            <img src="/assets/goodjob.png" alt="스탬프" />
+                                                            <img src="/assets/goodjob.png" alt="Stamp" />
                                                         )}
                                                     </div>
                                                 );
@@ -105,7 +103,6 @@ function StampScreen() {
                         </div>
                     </div>
 
-                    {/* --- 오른쪽 화살표 버튼 추가 --- */}
                     <button 
                         className="arrow-button next-button" 
                         onClick={handleNextPage}
@@ -128,8 +125,8 @@ function StampScreen() {
 
                 {!loading && stampInfo.stamp_count === 0 && (
                     <div className="no-stamps-message">
-                        <p>아직 모은 스탬프가 없어요.</p>
-                        <span>놀이를 시작해 첫 스탬프를 모아보세요!</span>
+                        <p>You haven't collected any stamps yet.</p>
+                        <span>Start playing to collect your first stamp!</span>
                     </div>
                 )}
             </main>

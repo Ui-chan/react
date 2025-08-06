@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ShopPage.css';
 
-// 하단 네비게이션 아이콘 정보
+// Bottom navigation icon information
 const navItems = [
-    { id: 'homechild', icon: '🏠', label: '홈' },
-    { id: 'play', icon: '🎮', label: '놀이' },
-    { id: 'stamp', icon: '🌟', label: '스탬프' },
-    { id: 'shop', icon: '🛒', label: '상점' },
+    { id: 'homechild', icon: '🏠', label: 'Home' },
+    { id: 'play', icon: '🎮', label: 'Play' },
+    { id: 'stamp', icon: '🌟', label: 'Stamps' },
+    { id: 'shop', icon: '🛒', label: 'Shop' },
 ];
 
 function ShopPage() {
@@ -18,7 +18,7 @@ function ShopPage() {
   const [userInfo, setUserInfo] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // 사용자 정보와 아이템 정보를 불러오는 통합 함수
+  // Function to fetch user info and item list
   const fetchData = async () => {
     try {
       const userId = 2;
@@ -31,8 +31,8 @@ function ShopPage() {
         })
       ]);
 
-      if (!itemsResponse.ok) throw new Error('아이템 목록을 불러오는 데 실패했습니다.');
-      if (!userResponse.ok) throw new Error('사용자 정보를 불러오는 데 실패했습니다.');
+      if (!itemsResponse.ok) throw new Error('Failed to load item list.');
+      if (!userResponse.ok) throw new Error('Failed to load user information.');
 
       const itemsData = await itemsResponse.json();
       const userData = await userResponse.json();
@@ -68,7 +68,7 @@ function ShopPage() {
     if (!selectedItem || !userInfo) return;
     
     if ((userInfo.point || 0) < selectedItem.price) {
-      alert("포인트가 부족합니다!");
+      alert("Not enough points!");
       return;
     }
 
@@ -88,9 +88,9 @@ function ShopPage() {
         throw new Error(errorMessage);
       }
 
-      alert(`${selectedItem.item_name} 아이템을 구매했습니다!`);
+      alert(`You have purchased the ${selectedItem.item_name} item!`);
       setLoading(true);
-      await fetchData(); // 유저 정보와 아이템 상태를 새로고침
+      await fetchData(); // Refresh user info and item status
       handleCloseModal();
 
     } catch (err) {
@@ -117,15 +117,15 @@ function ShopPage() {
           </div>
           <h2 className="modal-item-name">{selectedItem.item_name}</h2>
           <div className="modal-actions">
-            <button onClick={handleCloseModal} className="modal-button close-button">뒤로가기</button>
+            <button onClick={handleCloseModal} className="modal-button close-button">Back</button>
             <button 
               onClick={handlePurchase} 
               className="modal-button purchase-button"
               disabled={isOwned}
             >
-              {isOwned ? '보유중' : (
+              {isOwned ? 'Owned' : (
                 <>
-                  <span role="img" aria-label="point icon">🌟</span> {selectedItem.price} P로 구매하기
+                  <span role="img" aria-label="point icon">🌟</span> Buy for {selectedItem.price} P
                 </>
               )}
             </button>
@@ -142,23 +142,23 @@ function ShopPage() {
       </header>
 
       <main className="stamp-screen-content">
-        <h2 className="content-title">상점</h2>
+        <h2 className="content-title">Shop</h2>
         
         {userInfo && (
           <div className="stamp-summary-box">
-            <div className="summary-username">{userInfo.username} 어린이는</div>
-            <div className="summary-count">총 <span>{(userInfo.point || 0).toLocaleString()}</span> P를 가지고 있어요!</div>
+            <div className="summary-username">{userInfo.username} has</div>
+            <div className="summary-count">a total of <span>{(userInfo.point || 0).toLocaleString()}</span> P!</div>
           </div>
         )}
 
         {loading ? (
-            <p className="status-text">아이템을 불러오는 중...</p>
+            <p className="status-text">Loading items...</p>
         ) : error ? (
             <p className="status-text error">{error}</p>
         ) : (
             <div className="item-sections-container">
                 <section className="item-section">
-                    <h3 className="section-title">캐릭터</h3>
+                    <h3 className="section-title">Characters</h3>
                     <div className="item-grid">
                         {characterItems.map(item => {
                           const isOwned = userInfo?.store_character?.includes(item.item_name);
@@ -169,7 +169,7 @@ function ShopPage() {
                                 </div>
                                 <span className="item-name">{item.item_name}</span>
                                 <div className="buy-button">
-                                  {isOwned ? '보유중' : (
+                                  {isOwned ? 'Owned' : (
                                     <>
                                       <span role="img" aria-label="point icon">🌟</span> {item.price}
                                     </>
@@ -182,7 +182,7 @@ function ShopPage() {
                 </section>
 
                 <section className="item-section">
-                    <h3 className="section-title">배경</h3>
+                    <h3 className="section-title">Backgrounds</h3>
                     <div className="item-grid">
                         {backgroundItems.map(item => {
                            const isOwned = userInfo?.store_background?.includes(item.item_name);
@@ -193,7 +193,7 @@ function ShopPage() {
                                 </div>
                                 <span className="item-name">{item.item_name}</span>
                                 <div className="buy-button">
-                                  {isOwned ? '보유중' : (
+                                  {isOwned ? 'Owned' : (
                                     <>
                                       <span role="img" aria-label="point icon">🌟</span> {item.price}
                                     </>

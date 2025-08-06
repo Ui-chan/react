@@ -2,12 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/HomeChild.css';
 
-// 하단 네비게이션 아이콘 정보
+// Bottom navigation icon information
 const navItems = [
-    { id: 'homechild', icon: '🏠', label: '홈' },
-    { id: 'play', icon: '🎮', label: '놀이' },
-    { id: 'stamp', icon: '🌟', label: '스탬프' },
-    { id: 'shop', icon: '🛒', label: '상점' },
+    { id: 'homechild', icon: '🏠', label: 'Home' },
+    { id: 'play', icon: '🎮', label: 'Play' },
+    { id: 'stamp', icon: '🌟', label: 'Stamps' },
+    { id: 'shop', icon: '🛒', label: 'Shop' },
 ];
 
 function HomeChild() {
@@ -33,7 +33,7 @@ function HomeChild() {
                 }),
                 fetch('/api/item/all')
             ]);
-            if (!userResponse.ok || !itemsResponse.ok) throw new Error('데이터를 불러오지 못했습니다.');
+            if (!userResponse.ok || !itemsResponse.ok) throw new Error('Failed to load data.');
             const userData = await userResponse.json();
             const itemsData = await itemsResponse.json();
             setUserInfo(userData);
@@ -84,7 +84,7 @@ function HomeChild() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            if (!response.ok) throw new Error('아이템 변경에 실패했습니다.');
+            if (!response.ok) throw new Error('Failed to update items.');
             await fetchData();
         } catch (err) {
             alert(err.message);
@@ -133,9 +133,9 @@ function HomeChild() {
         window.removeEventListener('touchend', handleDragEnd);
     };
 
-    if (loading) return <div className="status-text">로딩 중...</div>;
+    if (loading) return <div className="status-text">Loading...</div>;
     if (error) return <div className="status-text error">{error}</div>;
-    if (!userInfo) return <div className="status-text">사용자 정보를 찾을 수 없습니다.</div>;
+    if (!userInfo) return <div className="status-text">Could not find user information.</div>;
 
     const ownedCharacters = allItems.filter(item => item.item_type === 1 && userInfo.store_character?.includes(item.item_name));
     const ownedBackgrounds = allItems.filter(item => item.item_type === 2 && userInfo.store_background?.includes(item.item_name));
@@ -146,9 +146,8 @@ function HomeChild() {
                 <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
             </header>
             <main className="home-child-content">
-                {/* --- 변경 버튼 추가 --- */}
                 <button className="change-view-button" onClick={() => navigate('/homeadult')}>
-                    변경
+                    Switch
                 </button>
                 
                 <div 
@@ -172,7 +171,7 @@ function HomeChild() {
                 </div>
                 
                 <button className="custom-button" onClick={() => setIsPanelOpen(true)}>
-                    <span role="img" aria-label="decorate">🎨</span> 꾸미기
+                    <span role="img" aria-label="decorate">🎨</span> Decorate
                 </button>
             </main>
             
@@ -192,12 +191,12 @@ function HomeChild() {
                 <div className="custom-panel-overlay" onClick={() => setIsPanelOpen(false)}>
                     <div className="custom-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="panel-header">
-                            <h2>놀이방 꾸미기</h2>
+                            <h2>Decorate Playroom</h2>
                             <button onClick={() => setIsPanelOpen(false)} className="close-panel-button">×</button>
                         </div>
                         <div className="panel-content">
                             <section className="panel-item-section">
-                                <h3>캐릭터 선택 (여러 개 선택 가능)</h3>
+                                <h3>Select Characters (Multiple choices possible)</h3>
                                 <div className="panel-item-grid">
                                     {ownedCharacters.map(item => (
                                         <div 
@@ -212,7 +211,7 @@ function HomeChild() {
                                 </div>
                             </section>
                             <section className="panel-item-section">
-                                <h3>배경 선택</h3>
+                                <h3>Select Background</h3>
                                 <div className="panel-item-grid">
                                     {ownedBackgrounds.map(item => (
                                         <div 

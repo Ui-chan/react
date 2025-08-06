@@ -1,84 +1,118 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import QuizCard from '../components/FirstGame';
+import FirstGame from '../components/FirstGame';
 import '../styles/FirstGame.css';
 
-const gameData = [
-  {
-    prompt: "🍎 빨간 사과는 어디 있지?",
-    correctAnswer: "사과",
-    items: [
-      { name: "사과", image: "/assets/apple.png" },
-      { name: "자동차", image: "/assets/car.png" },
-      { name: "오리", image: "/assets/duck.png" },
-    ],
-  },
-  {
-    prompt: "🍌 노란 바나나는 어디 있지?",
-    correctAnswer: "바나나",
-    items: [
-      { name: "공", image: "/assets/ball.png" },
-      { name: "바나나", image: "/assets/banana.png" },
-      { name: "집", image: "/assets/house.png"   },
-    ],
-  },
-  {
-    prompt: "🌃 밤 그림은 어디 있지?",
-    correctAnswer: "밤",
-    items: [
-      { name: "낮", image: "/assets/day.png" },
-      { name: "밤", image: "/assets/night.png" },
-      { name: "자동차", image: "/assets/car.png" },
-    ],
-  },
-];
-
 function FirstGamePage() {
-  const [gameStarted, setGameStarted] = useState(false);
+  const [gameState, setGameState] = useState('explanation');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [feedback, setFeedback] = useState('');
-  const [isGameFinished, setIsGameFinished] = useState(false);
   const navigate = useNavigate();
 
   const [sessionId, setSessionId] = useState(null);
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [correctAnswers, setCorrectAnswers] = useState(0);
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
+  
+  const [gameData, setGameData] = useState([]);
+  const [playedQuizIds, setPlayedQuizIds] = useState([]);
+  
+  const [isGameReady, setIsGameReady] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('Checking for available quizzes...');
+
+  const pollTimeoutRef = useRef(null);
+  const userId = 2; // In a real environment, this should be retrieved from login info, etc.
+
+  // --- Step 1: On page entry, check for available quizzes every 5 seconds ---
+  useEffect(() => {
+    const pollForAvailableQuizzes = async () => {
+      try {
+        const response = await fetch('/api/games/firstgame/get-or-wait-quizzes/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: userId }),
+        });
+
+        if (!response.ok) throw new Error('Server error while checking for quizzes');
+        const data = await response.json();
+
+        if (data.status === 'ready' && data.quizzes.length >= 3) {
+          setGameData(data.quizzes);
+          setPlayedQuizIds(data.quizzes.map(q => q.quiz_id));
+          setIsGameReady(true);
+          setLoadingMessage('Start Game');
+        } else {
+          setIsGameReady(false);
+          setLoadingMessage('The AI is preparing the next quiz. Please wait a moment...');
+          pollTimeoutRef.current = setTimeout(pollForAvailableQuizzes, 5000); // Check again after 5 seconds
+        }
+      } catch (error) {
+        console.error("Error polling for available quizzes:", error);
+        alert(error.message);
+        setIsGameReady(false);
+        setLoadingMessage('An error occurred');
+      }
+    };
+
+    // Start polling only when in the 'explanation' state
+    if (gameState === 'explanation') {
+      pollForAvailableQuizzes();
+    }
+
+    // Clear the poll timeout when the component unmounts or gameState changes
+    return () => clearTimeout(pollTimeoutRef.current);
+  }, [gameState]);
 
   const currentQuestion = gameData[currentQuestionIndex];
 
+  // --- Step 2: When the 'Start Game' button is clicked ---
   const handleStartGame = async () => {
+    if (!isGameReady) {
+      alert("The quiz is not ready yet. The button will be enabled shortly.");
+      return;
+    }
+
     try {
-      const response = await fetch('/api/games/session/start/', {
+      // 2-1. Start generating quizzes for the next game in the background
+      fetch('/api/games/firstgame/trigger-generation/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 2, game_id: 1 }),
+        body: JSON.stringify({ user_id: userId }),
       });
-      if (!response.ok) throw new Error('Failed to start session');
+
+      // 2-2. Start the current game session
+      const sessionResponse = await fetch('/api/games/session/start/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, game_id: 1 }),
+      });
+      if (!sessionResponse.ok) throw new Error('Failed to start session');
       
-      const data = await response.json();
-      setSessionId(data.session_id);
-      setGameStarted(true);
-      setIsGameFinished(false);
+      const sessionData = await sessionResponse.json();
+      setSessionId(sessionData.session_id);
+
+      // 2-3. Change the game state to 'playing'
+      setGameState('playing');
       setCurrentQuestionIndex(0);
       setCorrectAnswers(0);
       setFinalAssistanceLevel(null);
+
     } catch (error) {
-      console.error("Error starting game session:", error);
-      alert("게임 세션을 시작하는 데 실패했습니다.");
+      console.error("Error starting game:", error);
+      alert(error.message);
     }
   };
 
   useEffect(() => {
-    if (gameStarted && !isGameFinished) {
+    if (gameState === 'playing') {
       setQuestionStartTime(Date.now());
     }
-  }, [gameStarted, currentQuestionIndex, isGameFinished]);
+  }, [gameState, currentQuestionIndex]);
 
   const handleAnswerClick = async (itemName) => {
-    if (feedback) return;
+    if (feedback || !currentQuestion) return;
 
-    const isSuccessful = itemName === currentQuestion.correctAnswer;
+    const isSuccessful = itemName === currentQuestion.correct_answer;
     if (isSuccessful) {
       setCorrectAnswers(prevCount => prevCount + 1);
     }
@@ -88,40 +122,38 @@ function FirstGamePage() {
       is_successful: isSuccessful,
       response_time_ms: Date.now() - questionStartTime,
       interaction_data: {
-        prompt_text: currentQuestion.prompt,
-        target_item: currentQuestion.correctAnswer,
+        prompt_text: currentQuestion.prompt_text,
+        target_item: currentQuestion.correct_answer,
         selected_item: itemName,
         all_items: currentQuestion.items.map(i => i.name),
       }
     };
 
     try {
-      const response = await fetch('/api/games/interaction/log/', {
+      await fetch('/api/games/interaction/log/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(logData),
       });
-      if (!response.ok) throw new Error('Failed to log interaction');
 
-      if (isSuccessful) {
-        setFeedback('correct');
-      }
+      if (isSuccessful) { setFeedback('correct'); }
 
       setTimeout(() => {
         setFeedback('');
         if (currentQuestionIndex < gameData.length - 1) {
           setCurrentQuestionIndex(currentQuestionIndex + 1);
         } else {
-          setIsGameFinished(true);
+          setGameState('finished');
         }
       }, isSuccessful ? 1500 : 500);
 
     } catch (error) {
       console.error("Error logging interaction:", error);
-      alert("게임 기록 저장에 실패했습니다.");
+      alert("Failed to save game record.");
     }
   };
-
+  
+  // --- Step 3: On game end, end the current session ---
   const endCurrentSession = async () => {
     if (!sessionId) return;
     try {
@@ -131,10 +163,12 @@ function FirstGamePage() {
         body: JSON.stringify({ 
           session_id: sessionId, 
           correct_answers: correctAnswers,
-          assistance_level: finalAssistanceLevel
+          assistance_level: finalAssistanceLevel,
+          quiz_ids: playedQuizIds
         }),
       });
       setSessionId(null);
+      setPlayedQuizIds([]);
     } catch (error) {
       console.error("Error ending session:", error);
     }
@@ -147,81 +181,91 @@ function FirstGamePage() {
 
   const handlePlayAgain = async () => {
     await endCurrentSession();
-    setIsGameFinished(false);
-    setGameStarted(false);
+    setGameState('explanation');
   };
   
   const renderExplanationPage = () => (
     <div className="explanation-container">
-      <h1><span className="icon" role="img" aria-label="magnifying glass">🔎</span> '저기 봐!' 놀이</h1>
+      <h1><span className="icon">🔎</span> 'Look Over There!' Game</h1>
       <p>
-        이 놀이는 아이와 함께 화면의 사물을 보며 <br />
-        '저기 있네!' 하는 즐거움을 배우는 시간이에요. <br />
-        아이가 사물에 시선을 맞추면 부모님이 칭찬과 함께 탭해주세요. <br />
-        <strong>공동 주시(Joint Attention)</strong> 능력을 키우는 데 도움이 됩니다.
+        Answer new questions created by the AI.<br />
+        When your child looks at the correct object, praise them and tap the card. <br />
+        This helps develop <strong>Joint Attention</strong> skills.
       </p>
       <div className="explanation-buttons">
-        <button onClick={() => navigate('/play/')} className="back-button">뒤로가기</button>
-        <button onClick={handleStartGame} className="start-button">놀이 시작하기</button>
+        <button onClick={() => navigate('/play/')} className="back-button">Back</button>
+        <button onClick={handleStartGame} className="start-button" disabled={!isGameReady}>
+          {loadingMessage}
+        </button>
       </div>
     </div>
   );
 
-  const renderGamePage = () => (
-    <div className="game-container">
-      {feedback === 'correct' && <div className="feedback-correct"><h1>딩동댕! 🎉</h1></div>}
-      <h2 className="game-prompt">{currentQuestion.prompt}</h2>
-      <div className="cards-container">
-        {currentQuestion.items.map((item) => (
-          <QuizCard key={item.name} name={item.name} image={item.image} onClick={handleAnswerClick} />
-        ))}
+  const renderGamePage = () => {
+    if (!currentQuestion) {
+      return <div className="loading-text">Could not display the quiz...</div>;
+    }
+    return (
+      <div className="game-container">
+        {feedback === 'correct' && <div className="feedback-correct"><h1>Correct! 🎉</h1></div>}
+        <h2 className="game-prompt">{currentQuestion.prompt_text}</h2>
+        <div className="cards-container">
+          {currentQuestion.items.map((item) => (
+            <FirstGame key={item.name} name={item.name} image={item.image_url} onClick={handleAnswerClick} />
+          ))}
+        </div>
+        <div className="parent-guide">Parent's Guide: When your child looks at the correct answer, please tap the card for them!</div>
       </div>
-      <div className="parent-guide">부모님 가이드: 아이가 정답을 바라보면 대신 카드를 눌러주세요!</div>
-    </div>
-  );
+    );
+  };
 
   const renderGameFinishedModal = () => (
     <div className="game-modal-overlay">
       <div className="game-modal-content">
-        <h2>참! 잘했어요!</h2>
+        <h2>Great Job!</h2>
         <div className="stamp-container">
           {correctAnswers > 0 ? (
             Array.from({ length: correctAnswers }).map((_, index) => (
-              <img key={index} src="/assets/goodjob.png" alt="정답 스탬프" className="stamp-image" />
+              <img key={index} src="/assets/goodjob.png" alt="Correct Answer Stamp" className="stamp-image" />
             ))
-          ) : ( <p className="no-stamp-message">아쉽지만, 다음 기회에 스탬프를 모아봐요!</p> )}
+          ) : ( <p className="no-stamp-message">That's okay, let's try to collect stamps next time!</p> )}
         </div>
-        
         <div className="assistance-final-container">
-          <p className="assistance-title">게임 중 도움이 필요했나요?</p>
+          <p className="assistance-title">Was any help needed during the game?</p>
           <div className="assistance-buttons">
-            <button 
-              className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('NONE')}
-            >도움 없음</button>
-            <button 
-              className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >약간 도와줌</button>
-            <button 
-              className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >많이 도와줌</button>
+            <button className={finalAssistanceLevel === 'NONE' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('NONE')}>No Help</button>
+            <button className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('VERBAL')}>Verbal Help</button>
+            <button className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('PHYSICAL')}>Physical Help</button>
           </div>
         </div>
-
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>나가기</button>
-          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>다시하기</button>
+          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
     </div>
   );
 
+  const renderByGameState = () => {
+    switch (gameState) {
+      case 'playing':
+        return renderGamePage();
+      case 'finished':
+        return (
+          <>
+            {renderGamePage()}
+            {renderGameFinishedModal()}
+          </>
+        );
+      case 'explanation':
+      default:
+        return renderExplanationPage();
+    }
+  };
+
   return (
     <div className="first-game-page">
-      {!gameStarted ? renderExplanationPage() : renderGamePage()}
-      {isGameFinished && renderGameFinishedModal()}
+      {renderByGameState()}
     </div>
   );
 }

@@ -3,131 +3,156 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/SecondGame.css';
 
 const emotionData = [
-  { name: '행복', emoji: '😄' },
-  { name: '슬픔', emoji: '😢' },
-  { name: '놀람', emoji: '😮' },
-  { name: '화남', emoji: '😠' },
+    { name: 'angry', emoji: '😡', modelName: 'angry' },
+    { name: 'happy', emoji: '😄', modelName: 'happy' },
+    { name: 'sad', emoji: '😐', modelName: 'sad' },
+    { name: 'surprised', emoji: '😖', modelName: 'surprised' },
 ];
 
+
 function SecondGamePage() {
-  const [gameState, setGameState] = useState('explanation');
   const navigate = useNavigate();
-  
+  const [gameState, setGameState] = useState('explanation');
   const [currentEmotionIndex, setCurrentEmotionIndex] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
   
   const videoRef = useRef(null);
   const streamRef = useRef(null);
-  const [showSparkles, setShowSparkles] = useState(false);
+  const intervalRef = useRef(null);
+
   const [feedback, setFeedback] = useState('');
-  
-  const [isCameraReady, setIsCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState(null);
+  const [showSparkles, setShowSparkles] = useState(false);
   const [sessionId, setSessionId] = useState(null);
-  const [emotionStartTime, setEmotionStartTime] = useState(null);
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
+  
+  // State to store the start time for the current emotion
+  const [emotionStartTime, setEmotionStartTime] = useState(null);
 
   const currentEmotion = emotionData[currentEmotionIndex];
 
-  // --- 안정성을 위해 재구성된 로직 ---
-
-  // 1. 카메라를 켜고 끄는 함수
-  const stopCamera = () => {
+  const stopCameraAndDetection = () => {
+    clearInterval(intervalRef.current);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
-      console.log("Camera stopped.");
     }
   };
 
-  const startCamera = async () => {
-    stopCamera();
-    setCameraError(null);
-    setIsCameraReady(false);
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        streamRef.current = stream;
-        setIsCameraReady(true); // 카메라가 성공적으로 켜졌음을 상태에 저장
-      }
-    } catch (err) {
-      console.error("카메라 접근 에러:", err);
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        setCameraError('카메라 권한이 거부되었어요. 브라우저 설정에서 이 사이트의 카메라 권한을 허용해주세요.');
-      } else {
-        setCameraError('카메라를 시작할 수 없어요. 다른 앱에서 카메라를 사용 중인지 확인해주세요.');
-      }
-    }
-  };
-
-  // 2. 카메라가 준비되면(isCameraReady=true) 세션 시작 API 호출
   useEffect(() => {
-    if (isCameraReady && gameState === 'playing' && !sessionId) {
-      const startSession = async () => {
-        try {
-          const response = await fetch('/api/games/session/start/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: 2, game_id: 2 }),
-          });
-          if (!response.ok) throw new Error('Failed to start session');
-          const data = await response.json();
-          setSessionId(data.session_id);
-          console.log("Game session started with ID:", data.session_id);
-        } catch (err) {
-          console.error("세션 시작 에러:", err);
-          setCameraError('게임 세션을 시작할 수 없습니다.');
-        }
-      };
-      startSession();
-    }
-  }, [isCameraReady, gameState, sessionId]);
-
-  // 3. 세션이 시작되거나 문제가 바뀔 때 타이머 시작
-  useEffect(() => {
-    // sessionId가 있어야만 (즉, API 호출이 성공해야만) 타이머를 시작
-    if (sessionId && gameState === 'playing') {
-      setEmotionStartTime(Date.now());
-    }
-  }, [sessionId, currentEmotionIndex, gameState]);
-
-  // 컴포넌트가 사라질 때 무조건 카메라 정리
-  useEffect(() => {
-    return () => stopCamera();
+    return () => stopCameraAndDetection();
   }, []);
 
-  // '놀이 시작하기' 버튼은 이제 게임 상태 변경과 카메라 켜기만 담당
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     setGameState('playing');
     setCompletedCount(0);
     setCurrentEmotionIndex(0);
     setFinalAssistanceLevel(null);
-    startCamera(); // 카메라 켜기 시작
+    // Record the start time when the game begins
+    setEmotionStartTime(Date.now());
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Camera start error:", err);
+    }
+
+    try {
+        const response = await fetch('/api/games/session/start/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: 2, game_id: 2 }),
+        });
+        if (!response.ok) throw new Error('Failed to start session');
+        const data = await response.json();
+        setSessionId(data.session_id);
+    } catch (error) {
+        console.error("Session start error:", error);
+    }
+  };
+  
+  const startDetectionInterval = () => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(() => {
+        captureAndSendFrame();
+    }, 2000);
   };
 
-  // '확인' 버튼 클릭 시 로그 API 호출
-  const handleConfirmation = async () => {
+  // --- 핵심 수정: 게임 상태, 세션 ID, 문제 번호가 변경될 때마다 감지 로직을 제어 ---
+  useEffect(() => {
+    // 게임 중이고, 피드백이 표시되지 않으며, 세션 ID가 발급된 상태일 때만 감지를 시작합니다.
+    if (gameState === 'playing' && !feedback && sessionId) {
+        startDetectionInterval();
+    } else {
+        // 조건이 맞지 않으면 인터벌을 확실히 제거합니다.
+        clearInterval(intervalRef.current);
+    }
+    // 이 useEffect는 게임 상태, 문제 번호, 피드백, 세션 ID가 변경될 때마다 재실행됩니다.
+  }, [gameState, currentEmotionIndex, feedback, sessionId]);
+
+
+  const captureAndSendFrame = async () => {
+    // Ensure the video is ready and the start time has been set
+    if (!videoRef.current || videoRef.current.readyState < 3 || !emotionStartTime) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    const imageBase64 = canvas.toDataURL('image/jpeg');
+
+    // Calculate the time elapsed since the emotion was shown
+    const response_time_ms = Date.now() - emotionStartTime;
+
+    try {
+        const response = await fetch('/api/data/detect-emotion/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                image: imageBase64,
+                target_emotion: currentEmotion.modelName,
+                response_time_ms: response_time_ms // Send the elapsed time
+            }),
+        });
+        if (!response.ok) return;
+
+        const result = await response.json();
+
+        if (result.is_match) {
+            handleSuccess(response_time_ms);  // 전달
+        }
+    } catch (error) {
+        console.error("Emotion detection API error:", error);
+    }
+  };
+  
+  const handleSuccess = async (response_time_ms) => {
     if (feedback) return;
-    const responseTimeMs = Date.now() - emotionStartTime;
+    clearInterval(intervalRef.current);
 
     const logData = {
         session_id: sessionId,
         is_successful: true,
-        response_time_ms: responseTimeMs, // 이제 정상적으로 계산됨
+        response_time_ms: response_time_ms,
         interaction_data: {
             emotion_name: currentEmotion.name,
             emotion_emoji: currentEmotion.emoji
         }
     };
+
     try {
-        const response = await fetch('/api/games/interaction/log/', {
+        await fetch('/api/games/interaction/log/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(logData),
         });
-        if (!response.ok) throw new Error('Failed to log interaction');
-        
+
         setShowSparkles(true);
         setTimeout(() => setShowSparkles(false), 1000);
         setCompletedCount(prev => prev + 1);
@@ -137,15 +162,23 @@ function SecondGamePage() {
             setFeedback('');
             if (currentEmotionIndex < emotionData.length - 1) {
                 setCurrentEmotionIndex(prev => prev + 1);
+                // Reset the timer for the next emotion
+                setEmotionStartTime(Date.now());
             } else {
                 setGameState('finished');
+                stopCameraAndDetection();
             }
-        }, 1500);
+        }, 2000);
+
     } catch (error) {
         console.error("Error logging interaction:", error);
+        // 에러 발생 시에도 다음 시도를 위해 인터벌을 다시 시작할 수 있도록 합니다.
+        if (gameState === 'playing') {
+            startDetectionInterval();
+        }
     }
   };
-
+  
   const endCurrentSession = async () => {
     if (!sessionId) return;
     try {
@@ -165,93 +198,86 @@ function SecondGamePage() {
   };
 
   const handleExit = async () => {
-    stopCamera();
+    stopCameraAndDetection();
     await endCurrentSession();
     navigate('/play/');
   };
 
   const handlePlayAgain = async () => {
-    stopCamera();
+    stopCameraAndDetection();
     await endCurrentSession();
     setGameState('explanation');
-    setIsCameraReady(false);
   };
-  
+
   const renderExplanationPage = () => (
     <div className="game-explanation-container">
-      <h1><span role="img" aria-label="face emoji">😊</span> '표정 짓기' 놀이</h1>
+      <h1><span role="img" aria-label="face emoji">😊</span> 'Copy the Face' Game</h1>
       <p>
-        화면에 나타난 표정을 부모님이 먼저 따라하고, <br/>
-        아이가 그 표정을 모방하도록 유도해주세요. <br/>
-        이 게임은 전면 카메라 사용 권한이 필요합니다.
+        First, the parent can copy the expression on the screen, <br/>
+        and then encourage the child to imitate the expression. <br/>
+        This game requires permission to use the front camera.
       </p>
       <div className="game-buttons-container">
-        <button onClick={() => navigate('/play/')} className="game-back-button">뒤로가기</button>
-        <button onClick={handleStartGame} className="game-start-button">놀이 시작하기</button>
+        <button onClick={() => navigate('/play/')} className="game-back-button">Go Back</button>
+        <button onClick={handleStartGame} className="game-start-button">Start Game</button>
       </div>
     </div>
   );
 
   const renderGamePage = () => (
     <div className="second-game-container">
-      {feedback === 'great' && <div className="game-feedback-correct"><h1>최고야! 👍</h1></div>}
+      {feedback === 'great' && <div className="game-feedback-correct"><h1>Awesome! 👍</h1></div>}
       <div className="emotion-display">
         <div className="emotion-emoji">{currentEmotion.emoji}</div>
-        <div className="emotion-prompt">{currentEmotion.name} 표정을 따라 해봐요!</div>
+        <div className="emotion-prompt">Let's make a {currentEmotion.name} face!</div>
       </div>
       <div className="camera-container">
-        {cameraError ? (
-          <div className="camera-permission-overlay"><p className="camera-error-message">{cameraError}</p></div>
-        ) : (
-          <>
-            <video ref={videoRef} autoPlay playsInline muted className="camera-feed"></video>
-            {showSparkles && <div className="sparkle-effect"></div>}
-            {!isCameraReady && 
-              <div className="camera-permission-overlay"><p>카메라를 시작하는 중...</p></div>
-            }
-          </>
-        )}
+        {/* onCanPlay 이벤트 핸들러를 제거하고 useEffect로 로직을 통합합니다. */}
+        <video ref={videoRef} autoPlay playsInline muted></video>
+        {showSparkles && <div className="sparkle-effect"></div>}
+        <div className="camera-status-overlay">
+            <p>Analyzing your expression...</p>
+        </div>
       </div>
-      <button className="confirm-button" onClick={handleConfirmation} disabled={!isCameraReady || !sessionId}>
-        확인했어요!
-      </button>
-      <div className="game-parent-guide">부모님 가이드: 아이와 함께 표정을 따라한 후 버튼을 눌러주세요.</div>
+      <div className="game-parent-guide">
+        It automatically detects when you make the face in the camera!
+      </div>
     </div>
   );
 
   const renderGameFinishedModal = () => (
     <div className="game-modal-overlay">
       <div className="game-modal-content">
-        <h2>참! 잘했어요!</h2>
+        <h2>Great Job!</h2>
         <div className="stamp-container">
           {completedCount > 0 ? (
             Array.from({ length: completedCount }).map((_, index) => (
-              <img key={index} src="/assets/goodjob.png" alt="정답 스탬프" className="stamp-image" />
+              <img key={index} src="/assets/goodjob.png" alt="Stamp" className="stamp-image" />
             ))
           ) : (
-            <p className="no-stamp-message">다음에 스탬프를 모아봐요!</p>
+            <p className="no-stamp-message">Let's collect stamps next time!</p>
           )}
         </div>
         <div className="assistance-final-container">
-          <p className="assistance-title">게임 중 도움이 필요했나요?</p>
+          <p className="assistance-title">Was any help needed during the game?</p>
           <div className="assistance-buttons">
             <button 
               className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('NONE')}
-            >도움 없음</button>
+            >No Help</button>
             <button 
               className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >약간 도와줌</button>
+            >A little help</button>
             <button 
               className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >많이 도와줌</button>
+            >A lot of help</button>
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>나가기</button>
-          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>다시하기</button>
+          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
     </div>

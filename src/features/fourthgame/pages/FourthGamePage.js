@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/FourthGame.css';
 
 const allChoices = [
-  { id: 1, name: '꼬마버스 타요', thumbnail: '/assets/tayo.png', videoId: 'tVU53nGuPGw' },
-  { id: 2, name: '뽀로로', thumbnail: '/assets/pororo.png', videoId: 'E0W5sJZ2d64' },
-  { id: 3, name: '핑크퐁 상어가족', thumbnail: '/assets/pinkfong.png', videoId: '761ae_KDg_Q' },
-  { id: 4, name: '캐치! 티니핑', thumbnail: '/assets/teenieping.png', videoId: '8t7UQwX8Cr4' },
-  { id: 5, name: '브레드이발소', thumbnail: '/assets/bread.png', videoId: 'Q8J4sujhwq4' },
-  { id: 6, name: '슈퍼윙스', thumbnail: '/assets/superwings.png', videoId: '5slE1nbCbl8' },
+  { id: 1, name: 'Tayo the Little Car', thumbnail: '/assets/tayo.png', videoId: 'tVU53nGuPGw' },
+  { id: 2, name: 'Pororo', thumbnail: '/assets/pororo.png', videoId: 'E0W5sJZ2d64' },
+  { id: 3, name: 'Pinkfong Shark Family', thumbnail: '/assets/pinkfong.png', videoId: '761ae_KDg_Q' },
+  { id: 4, name: 'Catch! Tiny Ping!', thumbnail: '/assets/teenieping.png', videoId: '8t7UQwX8Cr4' },
+  { id: 5, name: 'Bread Barbershop', thumbnail: '/assets/bread.png', videoId: 'Q8J4sujhwq4' },
+  { id: 6, name: 'Super Wings', thumbnail: '/assets/superwings.png', videoId: '5slE1nbCbl8' },
 ];
 
 const shuffleArray = (array) => {
@@ -158,23 +158,23 @@ function FourthGamePage() {
 
   const renderExplanationPage = () => (
     <div className="game-explanation-container">
-      <h1><span role="img" aria-label="hand pointing emoji">👆</span> '나 이거 원해!' 놀이</h1>
+      <h1><span role="img" aria-label="hand pointing emoji">👆</span> "I Want This!" Game</h1>
       <p>
-        아이가 좋아하는 두 가지 영상을 보여주고, <br/>
-        보고 싶은 것을 직접 선택하게 하는 놀이입니다. <br/>
-        "타요 보고 싶어요!" 와 같이 아이의 선택을 언어로 표현해주세요. <br/>
-        <strong>기능적 의사소통 능력</strong>을 키우는 데 도움이 됩니다.
+        This game shows two videos the child likes and lets them choose what they want to watch. <br/>
+        Help the child verbally express their choice, like "I want to watch Tayo!" <br/>
+        <strong>This helps develop functional communication skills.</strong>
       </p>
       <div className="game-buttons-container">
-        <button onClick={handleExit} className="game-back-button">뒤로가기</button>
-        <button onClick={handleStartGame} className="game-start-button">놀이 시작하기</button>
+        <button onClick={handleExit} className="game-back-button">Go Back</button>
+        <button onClick={handleStartGame} className="game-start-button">Start Game</button>
       </div>
     </div>
   );
+  
 
   const renderChoosingPage = () => (
     <div className="fourth-game-container">
-      <h2 className="choice-prompt">무엇을 보고 싶니? 골라봐!</h2>
+      <h2 className="choice-prompt">What do you want to watch? Choose one!</h2>
       <div className="choices-container">
         {currentChoices.map(choice => (
           <div 
@@ -187,7 +187,7 @@ function FourthGamePage() {
           </div>
         ))}
       </div>
-      <div className="turn-counter">남은 선택: {TOTAL_CHOICES - choicesMade}</div>
+      <div className="turn-counter">Remaining Choices: {TOTAL_CHOICES - choicesMade}</div>
     </div>
   );
   
@@ -203,7 +203,7 @@ function FourthGamePage() {
         ></iframe>
       </div>
       <button onClick={handleReturnToChoice} className="return-button">
-        다 봤어요!
+        Finished Watching!
       </button>
     </div>
   );
@@ -211,30 +211,30 @@ function FourthGamePage() {
   const renderGameFinishedModal = () => (
     <div className="game-modal-overlay">
       <div className="game-modal-content">
-        <h2>참! 잘했어요!</h2>
+        <h2>Great Job!</h2>
         <div className="stamp-container">
-            <p className="finish-message">선택 놀이를 모두 완료했어요!</p>
+          <p className="finish-message">You've completed the choice game!</p>
         </div>
         <div className="assistance-final-container">
-          <p className="assistance-title">게임 중 도움이 필요했나요?</p>
+          <p className="assistance-title">Did the child need help during the game?</p>
           <div className="assistance-buttons">
             <button 
               className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('NONE')}
-            >도움 없음</button>
+            >No Help</button>
             <button 
               className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >약간 도와줌</button>
+            >Some Help</button>
             <button 
               className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >많이 도와줌</button>
+            >A Lot of Help</button>
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>나가기</button>
-          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>다시하기</button>
+          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
     </div>

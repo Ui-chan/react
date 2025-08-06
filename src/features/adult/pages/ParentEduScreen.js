@@ -2,26 +2,27 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/ParentEduScreen.css';
 
-// 부모님용 하단 네비게이션 아이콘 정보
+// Navigation items for parents
 const navItems = [
-    { id: 'homeadult', icon: '🏠', label: '홈' },
-    { id: 'stats', icon: '📝', label: '행동 기록' }, // 22 -> behaviorLog
-    { id: 'survey', icon: '📊', label: '설문' }, // stats -> survey, 성장 리포트 -> 설문
-    { id: 'parentEdu', icon: '📚', label: '부모 교육' }, // parentEdu로 유지
-  ];
-
-// P-ESDM 교육 영상 데이터 (요청하신 영상으로 교체)
-const eduVideos = [
-    { id: 1, title: 'What is ESDM', videoId: 'xkRwDOFbcAo' },
-    { id: 2, title: 'ESDM: 부모가 알아야 할 핵심 원칙', videoId: 'XXQBIN9mCzE' },
-    { id: 3, title: '공동 주시(Joint Attention) 훈련 방법', videoId: 'i4saReasm_g' },
-    { id: 4, title: '언어 발달을 돕는 일상 속 대화 기술', videoId: '6GY3pLK6MrI' },
+    { id: 'homeadult', icon: '🏠', label: 'Home' },
+    { id: 'stats', icon: '📝', label: 'Behavior Log' },
+    { id: 'survey', icon: '📊', label: 'Survey' },
+    { id: 'parentEdu', icon: '📚', label: 'Parent Ed.' },
 ];
 
+// P-ESDM educational video data
+const eduVideos = [
+    { id: 1, title: 'What is ESDM', videoId: 'xkRwDOFbcAo' },
+    { id: 2, title: 'ESDM: Core Principles for Parents', videoId: 'XXQBIN9mCzE' },
+    { id: 3, title: 'How to Train Joint Attention', videoId: 'i4saReasm_g' },
+    { id: 4, title: 'Everyday Conversation Skills for Language Development', videoId: '6GY3pLK6MrI' },
+];
+
+// Related blog/column data
 const eduBlogs = [
-    { id: 1, title: '우리 아이, 눈맞춤이 어려워요', source: '네이버 블로그', link: '#' },
-    { id: 2, title: 'ASD 아동의 상징 놀이 발달 단계', source: '전문가 칼럼', link: '#' },
-    { id: 3, title: '분리불안, 어떻게 대처해야 할까요?', source: '육아 매거진', link: '#' },
+    { id: 1, title: 'My Child Has Trouble with Eye Contact', source: 'Naver Blog', link: '#' },
+    { id: 2, title: 'Symbolic Play Development Stages in Children with ASD', source: 'Expert Column', link: '#' },
+    { id: 3, title: 'Separation Anxiety: How to Cope', source: 'Parenting Magazine', link: '#' },
 ];
 
 
@@ -40,11 +41,11 @@ function ParentEduScreen() {
       </header>
 
       <main className="adult-page-content">
-        <h2 className="content-title">부모 교육</h2>
+        <h2 className="content-title">Parent Education</h2>
 
-        {/* P-ESDM 교육 영상 섹션 */}
+        {/* P-ESDM Educational Videos Section */}
         <section className="edu-section">
-          <h3 className="section-title">P-ESDM 교육 영상</h3>
+          <h3 className="section-title">P-ESDM Training Videos</h3>
           <div className="video-grid">
             {eduVideos.map(video => (
               <div key={video.id} className="video-card">
@@ -63,9 +64,9 @@ function ParentEduScreen() {
           </div>
         </section>
         
-        {/* 관련 블로그/칼럼 섹션 */}
+        {/* Related Blogs/Columns Section */}
         <section className="edu-section">
-          <h3 className="section-title">읽어보면 좋은 글</h3>
+          <h3 className="section-title">Recommended Reading</h3>
           <div className="blog-list">
             {eduBlogs.map(blog => (
               <a key={blog.id} href={blog.link} target="_blank" rel="noopener noreferrer" className="blog-card">

@@ -21,7 +21,6 @@ function ThirdGamePage() {
   const powerIntervalRef = useRef(null);
   const [turnState, setTurnState] = useState('ready');
   
-  // 게이지 방향 제어를 위한 ref
   const gaugeDirection = useRef('up');
 
   const [sessionId, setSessionId] = useState(null);
@@ -40,7 +39,7 @@ function ThirdGamePage() {
     } 
     else if (ballState === 'at-child') {
       setTurnStartTime(Date.now());
-      setPower(0); // 다음 턴이 시작되면 게이지를 0으로 리셋
+      setPower(0);
     }
   }, [ballState, turnState, gameState]);
   
@@ -63,29 +62,28 @@ function ThirdGamePage() {
       setTurnState('ready');
     } catch (error) {
       console.error("Error starting game session:", error);
-      alert("게임 세션을 시작하는 데 실패했습니다.");
+      alert("Failed to start game session.");
     }
   };
 
-  // --- 버튼 누르기 시작: 게이지 왕복 운동 시작 ---
   const handleChargeStart = () => {
     if (turnState !== 'ready' || ballState !== 'at-child') return;
 
     setPower(0);
-    gaugeDirection.current = 'up'; // 항상 0에서 위로 시작
+    gaugeDirection.current = 'up';
     setTurnState('charging');
     
     powerIntervalRef.current = setInterval(() => {
       setPower(p => {
         if (gaugeDirection.current === 'up') {
           if (p >= 100) {
-            gaugeDirection.current = 'down'; // 100에 도달하면 방향 전환
+            gaugeDirection.current = 'down';
             return p - 1;
           }
           return p + 1;
-        } else { // 'down'
+        } else { 
           if (p <= 0) {
-            gaugeDirection.current = 'up'; // 0에 도달하면 방향 전환
+            gaugeDirection.current = 'up';
             return p + 1;
           }
           return p - 1;
@@ -94,14 +92,13 @@ function ThirdGamePage() {
     }, gaugeSpeed);
   };
 
-  // --- 버튼에서 손 떼기: 게이지 멈추고 공 던지기 ---
   const handleThrow = async () => {
     if (turnState !== 'charging') return;
 
-    clearInterval(powerIntervalRef.current); // 게이지 멈춤
-    setTurnState('thrown'); // 턴 상태를 '던짐'으로 변경하여 버튼 비활성화
+    clearInterval(powerIntervalRef.current);
+    setTurnState('thrown');
 
-    const currentPower = power; // 현재 멈춘 power 값 사용
+    const currentPower = power;
     const responseTimeMs = Date.now() - turnStartTime;
     let feedbackText = '';
     let isSuccess = false;
@@ -156,9 +153,9 @@ function ThirdGamePage() {
             }
         }, 1200);
     } catch (error) {
-        console.error("Error logging interaction:", error);
-        alert("게임 기록 저장에 실패했습니다.");
-        setTurnState('ready');
+      console.error("Error logging interaction:", error);
+      alert("Failed to save game record.");
+      setTurnState('ready');
     }
   };
 
@@ -192,16 +189,16 @@ function ThirdGamePage() {
 
   const renderExplanationPage = () => (
     <div className="game-explanation-container">
-      <h1><span role="img" aria-label="ball emoji">⚽</span> '공 주고받기' 놀이</h1>
+      <h1><span role="img" aria-label="ball emoji">⚽</span> 'Ball Toss' Game</h1>
       <p>
-        타이밍에 맞춰 버튼을 눌렀다 떼서<br/>
-        캐릭터에게 공을 던져주는 놀이입니다.<br/>
-        총 7번의 기회가 주어집니다.<br/>
-        <strong>상호작용적 차례 지키기</strong>를 배우는 데 도움이 됩니다.
+        Press and release the button with the right timing<br/>
+        to throw the ball to the character.<br/>
+        You have 7 chances.<br/>
+        This helps with learning <strong>interactive turn-taking</strong>.
       </p>
       <div className="game-buttons-container">
-        <button onClick={handleExit} className="game-back-button">뒤로가기</button>
-        <button onClick={handleStartGame} className="game-start-button">놀이 시작하기</button>
+        <button onClick={handleExit} className="game-back-button">Go Back</button>
+        <button onClick={handleStartGame} className="game-start-button">Start Game</button>
       </div>
     </div>
   );
@@ -214,7 +211,7 @@ function ThirdGamePage() {
         className="game-area"
         style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/assets/soccer.png)` }}
       >
-        <div className="turn-counter">남은 기회: {TOTAL_TURNS - totalAttempts}</div>
+        <div className="turn-counter">Turns Left: {TOTAL_TURNS - totalAttempts}</div>
         <div 
           className={`character ${characterState}`}
           style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/assets/character_idle.png)` }}
@@ -249,7 +246,7 @@ function ThirdGamePage() {
         onTouchEnd={handleThrow}
         disabled={turnState !== 'ready' || ballState !== 'at-child'}
       >
-        {turnState === 'charging' ? '놓아서 던지기!' : '눌러서 파워 모으기!'}
+        {turnState === 'charging' ? 'Release to Throw!' : 'Press to Charge Power!'}
       </button>
     </div>
   );
@@ -257,41 +254,41 @@ function ThirdGamePage() {
   const renderGameFinishedModal = () => (
     <div className="game-modal-overlay">
       <div className="game-modal-content">
-        <h2>참! 잘했어요!</h2>
+        <h2>Great Job!</h2>
         <div className="stamp-container">
           {successfulThrows > 0 ? (
             Array.from({ length: successfulThrows }).map((_, index) => (
               <img 
                 key={index} 
                 src="/assets/goodjob.png" 
-                alt="정답 스탬프" 
+                alt="Stamp" 
                 className="stamp-image" 
               />
             ))
           ) : (
-            <p className="no-stamp-message">다음에 스탬프를 모아봐요!</p>
+            <p className="no-stamp-message">Let's collect stamps next time!</p>
           )}
         </div>
         <div className="assistance-final-container">
-          <p className="assistance-title">게임 중 도움이 필요했나요?</p>
+          <p className="assistance-title">Was any help needed during the game?</p>
           <div className="assistance-buttons">
             <button 
               className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('NONE')}
-            >도움 없음</button>
+            >No Help</button>
             <button 
               className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >약간 도와줌</button>
+            >A little help</button>
             <button 
               className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
               onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >많이 도와줌</button>
+            >A lot of help</button>
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>나가기</button>
-          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>다시하기</button>
+          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
     </div>

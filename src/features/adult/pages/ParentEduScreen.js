@@ -5,24 +5,24 @@ import '../styles/ParentEduScreen.css';
 // Navigation items for parents
 const navItems = [
     { id: 'homeadult', icon: '🏠', label: 'Home' },
-    { id: 'stats', icon: '📝', label: 'Behavior Log' },
-    { id: 'survey', icon: '📊', label: 'Survey' },
+    { id: 'stats', icon: '📊', label: 'Behavior Log' },
+    { id: 'survey', icon: '📝', label: 'Survey' },
     { id: 'parentEdu', icon: '📚', label: 'Parent Ed.' },
-];
+  ];
 
 // P-ESDM educational video data
 const eduVideos = [
-    { id: 1, title: 'What is ESDM', videoId: 'xkRwDOFbcAo' },
-    { id: 2, title: 'ESDM: Core Principles for Parents', videoId: 'XXQBIN9mCzE' },
-    { id: 3, title: 'How to Train Joint Attention', videoId: 'i4saReasm_g' },
-    { id: 4, title: 'Everyday Conversation Skills for Language Development', videoId: '6GY3pLK6MrI' },
+    { id: 1, title: 'Autism and the Early Start Denver Model (ESDM)', videoId: '_AUF8U1xMt8' },
+    { id: 2, title: 'What you should know about raising an autistic child', videoId: 'LawBw9gbv_w' },
+    { id: 3, title: 'How Every Child Can Thrive by Five | Molly Wright | TED', videoId: 'aISXCw0Pi94' },
+    { id: 4, title: 'Using the Early Start Denver Model (ESDM) - Getting The Hook - Soar Autism Center', videoId: 'wMziSiFdmf0' },
 ];
 
 // Related blog/column data
 const eduBlogs = [
-    { id: 1, title: 'My Child Has Trouble with Eye Contact', source: 'Naver Blog', link: '#' },
-    { id: 2, title: 'Symbolic Play Development Stages in Children with ASD', source: 'Expert Column', link: '#' },
-    { id: 3, title: 'Separation Anxiety: How to Cope', source: 'Parenting Magazine', link: '#' },
+    { id: 1, title: 'No, you are not anxious, depressed, ASD, or ADHD. You are addicted.', source: 'medium.com', link: 'https://medium.com/@thewanderingengineer/no-you-are-not-anxious-depressed-asd-or-adhd-you-are-addicted-c66648352679' },
+    { id: 2, title: 'Preparing for a Second Pregnancy: Reducing the Risk of Autism Spectrum Disorder (ASD)', source: 'dr-tomato.com', link: 'https://dr-tomato.com/blog/autism-spectrum-disorder/' },
+    { id: 3, title: 'The DSM ASD “Levels”', source: 'medium.com', link: 'https://medium.com/@attleehall/the-dsm-asd-levels-81124c94687a' },
 ];
 
 

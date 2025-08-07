@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import '../styles/Survey.css';
+import '../styles/Survey.css'; // 여기에 adult-page__... 클래스가 정의되어 있다고 가정
 
 // Navigation items for parents
 const navItems = [
   { id: 'homeadult', icon: '🏠', label: 'Home' },
-  { id: 'stats', icon: '📝', label: 'Behavior Log' },
-  { id: 'survey', icon: '📊', label: 'Survey' },
+  { id: 'stats', icon: '📊', label: 'Behavior Log' },
+  { id: 'survey', icon: '📝', label: 'Survey' },
   { id: 'parentEdu', icon: '📚', label: 'Parent Ed.' },
 ];
 
@@ -44,7 +44,7 @@ function Survey() {
 
   const fetchHistory = async () => {
     try {
-        const userId = 2;
+        const userId = 2; // 예시 사용자 ID
         const response = await fetch('/api/data/checklist/history/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -148,15 +148,15 @@ function Survey() {
   
   const tileClassName = ({ date, view }) => {
     if (view === 'month' && history.some(record => isSameDay(new Date(record.created_at), date))) {
-        return 'record-day';
+        return 'adult-page__record-day'; // CSS 클래스 이름 충돌 방지
     }
     return null;
   };
 
   const renderInfoModal = () => (
-    <div className="info-modal-overlay" onClick={toggleInfoModal}>
-      <div className="info-modal-content" onClick={(e) => e.stopPropagation()}>
-        <button onClick={toggleInfoModal} className="close-modal-button top-right">×</button>
+    <div className="adult-page__info-modal-overlay" onClick={toggleInfoModal}>
+      <div className="adult-page__info-modal-content" onClick={(e) => e.stopPropagation()}>
+        <button onClick={toggleInfoModal} className="adult-page__close-modal-button top-right">×</button>
         <h4>Checklist Information</h4>
         <h5>Basis for Key Questions</h5>
         <ul>
@@ -174,54 +174,57 @@ function Survey() {
         <p>
           The risk assessment model in this checklist is directly adapted from the globally validated M-CHAT-R/F algorithm.
         </p>
-        <button onClick={toggleInfoModal} className="primary-button">Close</button>
+        <button onClick={toggleInfoModal} className="adult-page__primary-button">Close</button>
       </div>
     </div>
   );
 
   return (
-    <div className="adult-page-layout">
-      <header className="adult-page-header">
-        <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
-        <button className="info-button" onClick={toggleInfoModal}>?</button>
+    <div className="adult-page__layout">
+      <header className="adult-page__header">
+        <h1 className="adult-page__header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
+        <button className="adult-page__info-button" onClick={toggleInfoModal}>?</button>
       </header>
 
-      <main className="adult-page-content">
+      <main className="adult-page__content">
         {currentView === 'start' && (
           <>
-            <h2 className="content-title">Development Checklist</h2>
-            <section className="info-card">
+            <h2 className="adult-page__content-title">Development Checklist</h2>
+            <section className="adult-page__info-card">
               <h3>Child Development Checklist (16-36 months)</h3>
-              <p className="disclaimer">
+              <p className="adult-page__disclaimer">
                 <strong>Disclaimer:</strong> This checklist is a screening tool to help parents understand their child's development. It is not a medical diagnosis and cannot replace a professional evaluation. If you have any concerns, please consult a pediatrician or developmental specialist.
               </p>
-              <button className="primary-button" onClick={startQuiz}>
-                Start Survey
-              </button>
+              <div className="adult-page__start-button-wrapper">
+                <button className="adult-page__primary-button" onClick={startQuiz}>
+                    Start Survey
+                </button>
+              </div>
             </section>
-            <section className="info-card">
+            <section className="adult-page__info-card">
               <h3>Growth Report</h3>
-              <p className="card-subtitle">Select a date on the calendar to view the record.</p>
-              <div className="calendar-container">
+              <p className="adult-page__card-subtitle">Select a date on the calendar to view the record.</p>
+              <div className="adult-page__calendar-container">
                 <Calendar
                   onChange={setSelectedDate}
                   value={selectedDate}
                   tileClassName={tileClassName}
                   formatDay={(locale, date) => date.getDate()}
                   calendarType="gregory"
+                  locale="en-US"
                 />
               </div>
-              <div className="result-display-area">
+              <div className="adult-page__result-display-area">
                 {selectedResult ? (
                     <>
                         <h4>{new Date(selectedResult.created_at).toLocaleDateString()} Record</h4>
-                        <div className={`risk-level risk-${selectedResult.risk_level}`}>
+                        <div className={`adult-page__risk-level risk-${selectedResult.risk_level}`}>
                             <strong>{selectedResult.risk_level}</strong>
                         </div>
-                        <p className="recommendation-text">{selectedResult.recommendation}</p>
+                        <p className="adult-page__recommendation-text">{selectedResult.recommendation}</p>
                     </>
                 ) : (
-                    <p className="no-record-text">
+                    <p className="adult-page__no-record-text">
                         {loadingHistory ? 'Loading records...' : 'No record for the selected date.'}
                     </p>
                 )}
@@ -231,17 +234,17 @@ function Survey() {
         )}
 
         {currentView === 'quiz' && (
-          <div className="quiz-view-container">
-            <h2 className="content-title">Development Checklist</h2>
+          <div className="adult-page__quiz-view-container">
+            <h2 className="adult-page__content-title">Development Checklist</h2>
             {questions.map(q => (
-              <section key={q.id} className="question-card">
-                <p className="question-text">{q.id}. {q.text}</p>
-                <div className="options-container">
+              <section key={q.id} className="adult-page__question-card">
+                <p className="adult-page__question-text">{q.id}. {q.text}</p>
+                <div className="adult-page__options-container">
                   {['Yes', 'Sometimes', 'Rarely', 'No'].map(option => {
                     const valueMap = {'Yes': 'yes', 'Sometimes': 'sometimes', 'Rarely': 'rarely', 'No': 'no'};
                     const value = valueMap[option];
                     return (
-                      <label key={value} className="option-label">
+                      <label key={value} className="adult-page__option-label">
                         <input type="radio" name={`question-${q.id}`} value={value} checked={userAnswers[q.id] === value} onChange={() => handleAnswerChange(q.id, value)} />
                         <span>{option}</span>
                       </label>
@@ -251,36 +254,39 @@ function Survey() {
               </section>
             ))}
             {unansweredQuestions.length > 0 && (
-              <p className="error-message">
+              <p className="adult-page__error-message">
                 There are unanswered questions: #{unansweredQuestions.join(', ')}
               </p>
             )}
-            <div className="quiz-actions">
-                <button className="secondary-button" onClick={resetToStartView}>Back to Start</button>
-                <button className="primary-button" onClick={handleSubmit}>View Results</button>
+            <div className="adult-page__quiz-actions">
+                <button className="adult-page__secondary-button" onClick={resetToStartView}>Back to Start</button>
+                <button className="adult-page__primary-button" onClick={handleSubmit}>View Results</button>
             </div>
           </div>
         )}
 
         {currentView === 'result' && (
-          <section className="info-card result-card">
+          <section className="adult-page__info-card adult-page__result-card">
             <h3>Checklist Results</h3>
-            <div className={`risk-level risk-${riskLevel}`}>
+            <div className={`adult-page__risk-level risk-${riskLevel}`}>
               <strong>{riskLevel}</strong>
             </div>
-            <p className="recommendation-text">{recommendation}</p>
-            <button className="secondary-button" onClick={resetToStartView}>
-              Try Again
-            </button>
+            <p className="adult-page__recommendation-text">{recommendation}</p>
+            {/* [변경] 버튼을 div로 감싸 중앙 정렬 */}
+            <div className="adult-page__result-button-wrapper">
+                <button className="adult-page__secondary-button" onClick={resetToStartView}>
+                  Try Again
+                </button>
+            </div>
           </section>
         )}
       </main>
 
-      <footer className="bottom-navigation">
+      <footer className="adult-page__bottom-navigation">
         {navItems.map((item) => (
-            <button key={item.id} className={`nav-item ${item.id === 'survey' ? 'active' : ''}`} onClick={() => handleNavClick(item.id)}>
-                <div className="nav-icon">{item.icon}</div>
-                <span className="nav-label">{item.label}</span>
+            <button key={item.id} className={`adult-page__nav-item ${item.id === 'survey' ? 'active' : ''}`} onClick={() => handleNavClick(item.id)}>
+                <div className="adult-page__nav-icon">{item.icon}</div>
+                {item.label}
             </button>
         ))}
       </footer>

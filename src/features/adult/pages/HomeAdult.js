@@ -1,120 +1,145 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/HomeAdult.css'; // CSS 파일 경로 수정
+import '../styles/HomeAdult.css';
 
-// 부모님용 하단 네비게이션 아이콘 정보
+// Navigation items for the parent's view
 const navItems = [
-    { id: 'homeadult', icon: '🏠', label: '홈' },
-    { id: 'stats', icon: '📝', label: '행동 기록' }, // 22 -> behaviorLog
-    { id: 'survey', icon: '📊', label: '설문' }, // stats -> survey, 성장 리포트 -> 설문
-    { id: 'parentEdu', icon: '📚', label: '부모 교육' }, // parentEdu로 유지
-  ];
+    { id: 'homeadult', icon: '🏠', label: 'Home' },
+    { id: 'stats', icon: '📊', label: 'Behavior Log' },
+    { id: 'survey', icon: '📝', label: 'Survey' },
+    { id: 'parentEdu', icon: '📚', label: 'Parent Ed.' },
+];
 
 function HomeAdult() {
     const navigate = useNavigate();
-    // TODO: 실제 로그인된 부모/아이 정보를 API로 불러와야 합니다.
-    const [userInfo, setUserInfo] = useState({
-        username: 'an2',
-        level: 3,
-        expPercent: 85,
-        levelTitle: '정서 표현 마스터사우루스',
-        lastGameDays: 2,
-        recentSessionCount: 12,
-        expectedPointGain: 6,
-    });
+    const [userInfo, setUserInfo] = useState(null);
+    const [stats, setStats] = useState(null);
+    const [aiAnalysis, setAiAnalysis] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        // In a real application, API call logic would go here.
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Example data translated to English
+                const exampleUserInfo = { username: 'Hajun Kim', point: 1250, child_name: 'Hajun', base_character_img: ["/assets/character_idle.png"] };
+                const exampleStats = { total_play_time_minutes: 128, completed_sessions: 15, joint_attention_rate: 76 };
+                const exampleAiAnalysis = {
+                    summary: "Over the past week, Joint Attention skills have improved by 15%, with high concentration shown particularly in the 'Look Over There!' game.",
+                    positive_feedback: "It's very encouraging to see a steady increase in positive interactions. The frequency of responding to praise with a smile has notably increased.",
+                    recommendation: "We recommend increasing emotion imitation activities through the 'Make a Face' game. About 5 minutes a day is appropriate."
+                };
+                setUserInfo(exampleUserInfo);
+                setStats(exampleStats);
+                setAiAnalysis(exampleAiAnalysis);
+            } catch (err) {
+                console.error("Failed to fetch data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
 
     const handleNavClick = (path) => {
-        // 'homeadult'가 현재 페이지이므로, Router.js의 경로와 일치하는 'homepage'로 수정
-        if (path === 'homeadult') {
-            navigate('/homeadult'); // Router.js의 경로에 맞게 수정
-            return;
-        };
+        // Do nothing if the current page's button is clicked
+        if (path === 'homeadult') return;
         navigate(`/${path}`);
     };
-
+    
+    // Loading screen
+    if (loading) {
+        return <div className="home-adult__status-text">Loading dashboard...</div>;
+    }
+    
     return (
-        <div className="adult-page-layout">
-            <header className="adult-page-header">
-                <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
+        <div className="home-adult__layout">
+            {/* [수정] 헤더에 버튼 추가 */}
+            <header className="home-adult__header">
+                <h1 className="home-adult__header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
+                <button className="home-adult__view-change-btn" onClick={() => navigate('/homechild')}>
+                    Child's View
+                </button>
             </header>
 
-            <main className="adult-page-content">
-                {/* --- 변경 버튼 추가 --- */}
-                <button className="change-view-button" onClick={() => navigate('/homechild')}>
-                    변경
-                </button>
-
-                {/* 프로필 카드 */}
-                <section className="profile-card">
-                    <div className="profile-image-wrapper">
-                        {/* TODO: 사용자의 대표 캐릭터 이미지로 교체 */}
-                        <img src="/assets/character_idle.png" alt="대표 캐릭터" className="profile-character" />
-                    </div>
-                    <h2 className="profile-name">{userInfo.username}</h2>
-                    <div className="level-info">
-                        <span className="level-text">LV.{userInfo.level}</span>
-                        <div className="progress-bar-container">
-                            <div className="progress-bar-fill" style={{ width: `${userInfo.expPercent}%` }}></div>
-                        </div>
-                    </div>
-                    <span className="level-description">{userInfo.levelTitle}</span>
+            <main className="home-adult__content">
+                {/* "Today's Start" Card */}
+                <section className="home-adult__greeting-card">
+                    <h4>Today's Start 🌱</h4>
+                    <p>Shall we start another day of fun interaction with {userInfo?.child_name}?</p>
                 </section>
 
-                {/* 훈련 섹션 */}
-                <section className="info-card">
-                    <div className="card-header">
-                        <h3>훈련</h3>
-                        <span className="update-text">최근 게임 {userInfo.lastGameDays}일 전 &gt;</span>
-                    </div>
-                    <div className="training-summary">
-                        {/* 도넛 차트와 범례 */}
-                        <div className="donut-chart-container">
-                            {/* 실제 차트 라이브러리로 대체될 수 있는 CSS 기반 차트 */}
+                {/* AI Analysis Box */}
+                {aiAnalysis && (
+                    <section className="home-adult__ai-analysis-box">
+                        <h3 className="home-adult__ai-section-title">💡 AI Weekly Analysis Report</h3>
+                        <div className="home-adult__ai-section">
+                            <h5>Overall Summary</h5>
+                            <p>{aiAnalysis.summary}</p>
                         </div>
-                        <div className="score-info">
-                            <p>최근 학습 횟수</p>
-                            <p className="score">{userInfo.recentSessionCount}회</p>
-                            <p className="expected-score">예상 점수 +{userInfo.expectedPointGain}점</p>
+                        <div className="home-adult__ai-section">
+                            <h5>Positive Changes</h5>
+                            <p>{aiAnalysis.positive_feedback}</p>
                         </div>
-                    </div>
-                </section>
+                        <div className="home-adult__ai-section">
+                            <h5>Recommended Activities</h5>
+                            <p>{aiAnalysis.recommendation}</p>
+                        </div>
+                    </section>
+                )}
                 
-                <div className="grid-container">
-                    {/* 부모 교육 섹션 */}
-                    <section className="info-card">
-                        <div className="card-header">
-                            <h3>부모 교육</h3>
-                            <span className="update-text">최근 10시간 전 &gt;</span>
+                {/* Dashboard Grid */}
+                <div className="home-adult__dashboard-grid">
+                    <button className="home-adult__dashboard-card clickable" onClick={() => navigate('/stats')}>
+                        <h3>📊 Training Stats</h3>
+                        <p>Check your child's growth process with detailed data.</p>
+                        <div className="home-adult__stat-summary">
+                            <div className="home-adult__stat-item">
+                                <span>Total Training Time</span>
+                                <strong>{stats?.total_play_time_minutes} min</strong>
+                            </div>
+                            <div className="home-adult__stat-item">
+                                <span>Joint Attention Success Rate</span>
+                                <strong>{stats?.joint_attention_rate}%</strong>
+                            </div>
                         </div>
-                        <div className="education-summary">
-                            {/* 교육 콘텐츠 요약 */}
-                            <p>아이의 상호작용을 늘리는 꿀팁!</p>
-                        </div>
-                    </section>
+                        <span className="home-adult__card-link">View Details &gt;</span>
+                    </button>
 
-                    {/* 행동 기록 섹션 */}
-                    <section className="info-card">
-                        <div className="card-header">
-                            <h3>행동 기록</h3>
-                            <span className="update-text">오늘 3회 기록 &gt;</span>
+                    <div className="home-adult__dashboard-card profile-card">
+                        <h3>⭐️ {userInfo?.child_name}'s Profile</h3>
+                        <div className="home-adult__profile-content">
+                            <img src={userInfo?.base_character_img[0]} alt={`${userInfo?.child_name}'s Character`}/>
+                            <div className="home-adult__profile-info">
+                                <span>Points Earned</span>
+                                <strong>{userInfo?.point.toLocaleString()} P</strong>
+                            </div>
                         </div>
-                         <div className="behavior-summary">
-                            {/* 행동 기록 요약 */}
-                            <p>긍정적 행동이 늘고 있어요!</p>
-                        </div>
-                    </section>
+                    </div>
+                    
+                    <button className="home-adult__dashboard-card clickable" onClick={() => navigate('/survey')}>
+                        <h3>📝 Developmental Survey</h3>
+                        <p>Check and manage your child's developmental stage with regular surveys.</p>
+                        <span className="home-adult__card-link">Start Survey &gt;</span>
+                    </button>
+
+                    <button className="home-adult__dashboard-card clickable" onClick={() => navigate('/parentEdu')}>
+                        <h3>📚 Parent Education</h3>
+                        <p>Find useful tips and educational videos to increase interaction with your child.</p>
+                        <span className="home-adult__card-link">Learn More &gt;</span>
+                    </button>
                 </div>
             </main>
 
-            <footer className="bottom-navigation">
+            <footer className="home-adult__bottom-navigation">
                 {navItems.map((item) => (
                     <button 
                         key={item.id} 
-                        className={`nav-item ${item.id === 'homeadult' ? 'active' : ''}`}
-                        onClick={() => handleNavClick(item.id)}
-                    >
-                        <div className="nav-icon">{item.icon}</div>
-                        <span className="nav-label">{item.label}</span>
+                        className={`home-adult__nav-item ${item.id === 'homeadult' ? 'active' : ''}`}
+                        onClick={() => handleNavClick(item.id)}>
+                        <div className="home-adult__nav-icon">{item.icon}</div>
+                        {item.label}
                     </button>
                 ))}
             </footer>

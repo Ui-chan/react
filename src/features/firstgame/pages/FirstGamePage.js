@@ -20,6 +20,9 @@ function FirstGamePage() {
   const [isGameReady, setIsGameReady] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Checking for available quizzes...');
 
+  // State to manage the exit confirmation modal
+  const [showExitModal, setShowExitModal] = useState(false);
+
   const pollTimeoutRef = useRef(null);
   const userId = 2; // In a real environment, this should be retrieved from login info, etc.
 
@@ -46,7 +49,8 @@ function FirstGamePage() {
           setLoadingMessage('The AI is preparing the next quiz. Please wait a moment...');
           pollTimeoutRef.current = setTimeout(pollForAvailableQuizzes, 5000); // Check again after 5 seconds
         }
-      } catch (error) {
+      } catch (error)
+{
         console.error("Error polling for available quizzes:", error);
         alert(error.message);
         setIsGameReady(false);
@@ -183,6 +187,11 @@ function FirstGamePage() {
     await endCurrentSession();
     setGameState('explanation');
   };
+
+  // Function to show the exit modal
+  const handleBackButtonClick = () => {
+    setShowExitModal(true);
+  };
   
   const renderExplanationPage = () => (
     <div className="explanation-container">
@@ -207,6 +216,7 @@ function FirstGamePage() {
     }
     return (
       <div className="game-container">
+        <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
         {feedback === 'correct' && <div className="feedback-correct"><h1>Correct! 🎉</h1></div>}
         <h2 className="game-prompt">{currentQuestion.prompt_text}</h2>
         <div className="cards-container">
@@ -246,6 +256,20 @@ function FirstGamePage() {
     </div>
   );
 
+  // Function to render the exit confirmation modal
+  const renderExitModal = () => (
+    <div className="game-modal-overlay">
+      <div className="game-modal-content">
+        <h2>Exit Game?</h2>
+        <p className="exit-confirm-text">Are you sure you want to quit the game? Your progress will not be saved.</p>
+        <div className="game-modal-buttons">
+          <button onClick={() => setShowExitModal(false)} className="game-modal-button game-exit-button">Cancel</button>
+          <button onClick={handleExit} className="game-modal-button game-play-again-button">Confirm</button>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderByGameState = () => {
     switch (gameState) {
       case 'playing':
@@ -266,6 +290,8 @@ function FirstGamePage() {
   return (
     <div className="first-game-page">
       {renderByGameState()}
+      {/* Conditionally render the exit modal */}
+      {showExitModal && renderExitModal()}
     </div>
   );
 }

@@ -8,6 +8,38 @@
   font-family: 'Pretendard', sans-serif;
   background-color: #f8f9fa;
 }
+.ai-analysis-box {
+  background-color: #f1f3f5;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-left: 5px solid #20c997;
+}
+.ai-analysis-box .ai-section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 15px 0;
+}
+.ai-analysis-box .ai-section {
+    margin-bottom: 15px;
+}
+.ai-analysis-box .ai-section:last-child {
+    margin-bottom: 0;
+}
+.ai-analysis-box h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin: 0 0 8px 0;
+}
+.ai-analysis-box p {
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.7;
+  margin: 0;
+}
+
 
 /* 상단 헤더 */
 .adult-page-header {
@@ -103,10 +135,10 @@
 
 /* --- 요약 그리드 (3x3) 수정 --- */
 .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 한 줄에 3개씩 표시 */
-    gap: 15px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-bottom: 30px;
 }
 .summary-item {
     background-color: #f8f9fa;

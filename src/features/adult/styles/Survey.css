@@ -1,6 +1,6 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
-.adult-page-layout {
+.adult-page__layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -10,7 +10,7 @@
 }
 
 /* 상단 헤더 */
-.adult-page-header {
+.adult-page__header {
   flex-shrink: 0;
   padding: 15px 20px;
   background-color: white;
@@ -22,14 +22,14 @@
   align-items: center;
 }
 
-.header-logo {
+.adult-page__header-logo {
   font-size: 1.8rem;
   font-weight: 800;
   color: #343a40;
   margin: 0;
 }
 
-.info-button {
+.adult-page__info-button {
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -44,20 +44,20 @@
   justify-content: center;
   transition: all 0.2s ease;
 }
-.info-button:hover {
+.adult-page__info-button:hover {
   background-color: #f1f3f5;
   color: #495057;
 }
 
 /* 메인 콘텐츠 */
-.adult-page-content {
+.adult-page__content {
   flex-grow: 1;
   overflow-y: auto;
   padding: 25px 20px;
   text-align: center;
 }
 
-.content-title {
+.adult-page__content-title {
   font-size: 2rem;
   font-weight: 700;
   color: #212529;
@@ -65,7 +65,7 @@
 }
 
 /* 공통 카드 스타일 */
-.info-card {
+.adult-page__info-card {
   background-color: white;
   border-radius: 20px;
   padding: 25px;
@@ -74,14 +74,14 @@
   max-width: 800px;
   text-align: left;
 }
-.info-card h3 {
+.adult-page__info-card h3 {
   font-size: 1.5rem;
   margin: 0 0 20px 0;
   text-align: center;
   font-weight: 700;
 }
 
-.disclaimer {
+.adult-page__disclaimer {
   font-size: 0.9rem;
   color: #495057;
   background-color: #f1f3f5;
@@ -91,19 +91,19 @@
   line-height: 1.6;
 }
 
-.score-highlight {
+.adult-page__score-highlight {
   font-weight: 700;
   color: #20c997;
   font-size: 1.2em;
 }
 
 /* 설문지 화면 스타일 */
-.quiz-view-container {
+.adult-page__quiz-view-container {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.question-card {
+.adult-page__question-card {
   background-color: white;
   border-radius: 20px;
   padding: 25px;
@@ -112,27 +112,27 @@
   text-align: left;
 }
 
-.question-text {
+.adult-page__question-text {
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0 0 20px 0;
   line-height: 1.5;
 }
 
-.options-container {
+.adult-page__options-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.option-label {
+.adult-page__option-label {
   display: block;
   cursor: pointer;
 }
-.option-label input[type="radio"] {
+.adult-page__option-label input[type="radio"] {
   display: none;
 }
-.option-label span {
+.adult-page__option-label span {
   display: block;
   padding: 12px;
   border: 1px solid #dee2e6;
@@ -141,50 +141,51 @@
   text-align: center;
   transition: all 0.2s ease;
 }
-.option-label:hover span {
+.adult-page__option-label:hover span {
     background-color: #f8f9fa;
 }
-.option-label input[type="radio"]:checked + span {
+.adult-page__option-label input[type="radio"]:checked + span {
   background-color: #20c997;
   border-color: #20c997;
   color: white;
   font-weight: 600;
 }
-.option-label input[type="radio"]:checked + span::before {
+.adult-page__option-label input[type="radio"]:checked + span::before {
   content: '✔';
   margin-right: 8px;
   color: white;
 }
 
 
-.error-message {
+.adult-page__error-message {
   color: #fa5252;
   margin-bottom: 15px;
   text-align: center;
 }
 
-.quiz-actions {
+.adult-page__quiz-actions {
     display: flex;
     gap: 15px;
     margin-top: 10px;
 }
 
 /* 결과 페이지 스타일 */
-.result-card h3 { text-align: center; }
-.risk-level {
+.adult-page__result-card h3 { text-align: center; }
+
+.adult-page__risk-level {
   padding: 20px;
   border-radius: 15px;
   margin-bottom: 20px;
   font-size: 1.3rem;
   text-align: center;
-  color: rgb(33, 201, 151);
+  color: white;
   font-weight: 700;
 }
-.risk-level.risk-높은\ 우려 { background-color: #fa5252; }
-.risk-level.risk-중간\ 우려 { background-color: #fcc419; color: #343a40; }
-.risk-level.risk-낮은\ 우려 { background-color: #40c057; }
+.adult-page__risk-level.risk-High { background-color: #fa5252; }
+.adult-page__risk-level.risk-Moderate { background-color: #fcc419; color: #343a40; }
+.adult-page__risk-level.risk-Low { background-color: #40c057; }
 
-.recommendation-text {
+.adult-page__recommendation-text {
   line-height: 1.7;
   color: #495057;
   margin-bottom: 20px;
@@ -192,7 +193,7 @@
 }
 
 /* 공통 버튼 스타일 */
-.primary-button, .secondary-button {
+.adult-page__primary-button, .adult-page__secondary-button {
   flex: 1;
   padding: 14px;
   font-size: 1.1rem;
@@ -202,11 +203,26 @@
   cursor: pointer;
   margin-top: 10px;
 }
-.primary-button { background-color: #20c997; color: white; }
-.secondary-button { background-color: #f1f3f5; color: #495057; }
+.adult-page__primary-button { background-color: #20c997; color: white; }
+.adult-page__secondary-button { background-color: #f1f3f5; color: #495057; }
+
+
+/* [추가] Start Survey 버튼을 중앙 정렬하기 위한 래퍼 스타일 */
+.adult-page__start-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+}
+
+/* [추가] 래퍼 안의 버튼이 flex: 1 속성을 갖지 않도록 수정 */
+.adult-page__start-button-wrapper .adult-page__primary-button {
+  flex: none;
+  padding: 14px 40px;
+}
+
 
 /* 하단 네비게이션 바 */
-.bottom-navigation {
+.adult-page__bottom-navigation {
   flex-shrink: 0;
   display: flex;
   justify-content: space-around;
@@ -216,7 +232,7 @@
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
   z-index: 10;
 }
-.nav-item {
+.adult-page__nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -230,17 +246,17 @@
   transition: color 0.2s ease;
   flex: 1;
 }
-.nav-icon {
+.adult-page__nav-icon {
   font-size: 1.8rem;
   margin-bottom: 4px;
 }
-.nav-item.active {
+.adult-page__nav-item.active {
   color: #20c997;
   font-weight: 700;
 }
 
 /* 도움말 모달 */
-.info-modal-overlay {
+.adult-page__info-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -252,7 +268,7 @@
   align-items: center;
   z-index: 1000;
 }
-.info-modal-content {
+.adult-page__info-modal-content {
   background-color: white;
   padding: 25px;
   border-radius: 20px;
@@ -264,30 +280,30 @@
   position: relative;
   text-align: left;
 }
-.info-modal-content h4 {
+.adult-page__info-modal-content h4 {
   font-size: 1.5rem;
   text-align: center;
   margin: 0 0 25px 0;
 }
-.info-modal-content h5 {
+.adult-page__info-modal-content h5 {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 20px 0 10px 0;
   border-bottom: 1px solid #e9ecef;
   padding-bottom: 5px;
 }
-.info-modal-content p, .info-modal-content ul {
+.adult-page__info-modal-content p, .adult-page__info-modal-content ul {
   font-size: 0.9rem;
   color: #495057;
   line-height: 1.7;
 }
-.info-modal-content ul {
+.adult-page__info-modal-content ul {
   padding-left: 20px;
 }
-.info-modal-content li {
+.adult-page__info-modal-content li {
   margin-bottom: 10px;
 }
-.close-modal-button.top-right {
+.adult-page__close-modal-button.top-right {
   position: absolute;
   top: 10px;
   right: 15px;
@@ -299,19 +315,20 @@
 }
 
 /* --- 캘린더 및 리포트 관련 스타일 (추가) --- */
-.card-subtitle {
+.adult-page__card-subtitle {
     text-align: center;
     color: #868e96;
     margin-top: -15px;
     margin-bottom: 20px;
 }
 
-.calendar-container {
+.adult-page__calendar-container {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
 }
 
+/* react-calendar 라이브러리 스타일은 전역적으로 유지 */
 .react-calendar {
     width: 100%;
     border: none;
@@ -333,10 +350,10 @@
     font-size: 1.2rem;
     font-weight: bold;
 }
-.record-day {
+.adult-page__record-day {
     position: relative;
 }
-.record-day::after {
+.adult-page__record-day::after {
     content: '';
     display: block;
     position: absolute;
@@ -348,23 +365,35 @@
     border-radius: 50%;
     background-color: #20c997;
 }
-.react-calendar__tile--active.record-day::after {
+.react-calendar__tile--active.adult-page__record-day::after {
     background-color: white;
 }
 
-.result-display-area {
+.adult-page__result-display-area {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 1px solid #f1f3f5;
 }
-.result-display-area h4 {
+.adult-page__result-display-area h4 {
     font-size: 1.2rem;
     font-weight: 700;
     margin: 0 0 15px 0;
     text-align: center;
 }
-.no-record-text {
+.adult-page__no-record-text {
     color: #868e96;
     text-align: center;
     padding: 20px 0;
+}
+
+.adult-page__result-button-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+/* [추가] 래퍼 안의 버튼이 flex: 1 속성을 갖지 않도록 수정 */
+.adult-page__result-button-wrapper .adult-page__secondary-button {
+  flex: none; /* 너비가 꽉 차지 않도록 flex 속성 초기화 */
+  padding: 14px 40px; /* 버튼 크기 재지정 */
 }

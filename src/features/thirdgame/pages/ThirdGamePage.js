@@ -27,6 +27,8 @@ function ThirdGamePage() {
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
   const [turnStartTime, setTurnStartTime] = useState(null);
 
+  const [showExitModal, setShowExitModal] = useState(false);
+
   useEffect(() => {
     if (gameState !== 'playing') return;
     if (ballState === 'at-character' && turnState === 'thrown') {
@@ -177,14 +179,18 @@ function ThirdGamePage() {
     }
   };
 
-  const handleExit = async () => {
+  const handleConfirmExit = async () => {
     await endCurrentSession();
-    navigate('/play/');
+    navigate('/play');
   };
 
   const handlePlayAgain = async () => {
     await endCurrentSession();
     setGameState('explanation');
+  };
+  
+  const handleBackButtonClick = () => {
+    setShowExitModal(true);
   };
 
   const renderExplanationPage = () => (
@@ -197,7 +203,7 @@ function ThirdGamePage() {
         This helps with learning <strong>interactive turn-taking</strong>.
       </p>
       <div className="game-buttons-container">
-        <button onClick={handleExit} className="game-back-button">Go Back</button>
+        <button onClick={() => navigate('/play')} className="game-back-button">Go Back</button>
         <button onClick={handleStartGame} className="game-start-button">Start Game</button>
       </div>
     </div>
@@ -205,7 +211,7 @@ function ThirdGamePage() {
 
   const renderGamePage = () => (
     <div className="third-game-container">
-      <button onClick={() => navigate('/play')} className="game-play-back-button">‹</button>
+      <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
       
       <div 
         className="game-area"
@@ -287,8 +293,21 @@ function ThirdGamePage() {
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handleConfirmExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
           <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderExitModal = () => (
+    <div className="game-modal-overlay">
+      <div className="game-modal-content">
+        <h2>Exit Game?</h2>
+        <p className="exit-confirm-text">Are you sure you want to quit the game? Your progress will not be saved.</p>
+        <div className="game-modal-buttons">
+          <button onClick={() => setShowExitModal(false)} className="game-modal-button game-exit-button">Cancel</button>
+          <button onClick={handleConfirmExit} className="game-modal-button game-play-again-button">Confirm</button>
         </div>
       </div>
     </div>
@@ -299,6 +318,7 @@ function ThirdGamePage() {
       {gameState === 'explanation' && renderExplanationPage()}
       {gameState === 'playing' && renderGamePage()}
       {gameState === 'finished' && renderGameFinishedModal()}
+      {showExitModal && renderExitModal()}
     </div>
   );
 }

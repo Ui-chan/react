@@ -10,25 +10,25 @@ function LoginPage() {
   const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Form의 기본 제출 동작 방지
+    e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const response = await fetch('/api/users/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-      
+
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '로그인에 실패했습니다.');
+        throw new Error(data.error || 'Login failed.');
       }
-      
-      console.log('로그인 성공! 홈페이지로 이동합니다.', data.user);
-      // TODO: 로그인 성공 시 받은 사용자 정보(data.user)를 앱 전체 상태에 저장해야 합니다.
+
+      console.log('Login successful! Navigating to the homepage.', data.user);
+      // TODO: User info (data.user) received on successful login should be stored in the app's global state.
       
       window.location.href = '/homechild';
 
@@ -43,34 +43,31 @@ function LoginPage() {
   return (
     <div className="login-page-container">
       <div className="login-form-wrapper">
-        <img
-          src="/assets/zerodose_logo.svg"
-          alt="ZeroDose Logo"
-          className="login-logo"
-        />
-        <h1 className="login-title">환영합니다!</h1>
-        <p className="login-subtitle">아이와 함께 즐거운 놀이 시간을 시작해 보세요.</p>
+        <div className="login-icon">🌱</div>
         
+        <h1 className="login-title">Welcome!</h1>
+        <p className="login-subtitle">The first step towards joyful growth with your child.</p>
+
         <form onSubmit={handleLogin} className="login-form">
           <div className="input-group">
-            <label htmlFor="username">사용자 이름 또는 이메일</label>
-            <input 
+            <label htmlFor="username">Username</label>
+            <input
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="사용자 이름을 입력하세요"
+              placeholder="Enter your username"
               required
             />
           </div>
           <div className="input-group">
-            <label htmlFor="password">비밀번호</label>
+            <label htmlFor="password">Password</label>
             <input
-              id="password" 
+              id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)} 
-              placeholder="비밀번호를 입력하세요"
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
             />
           </div>
@@ -78,14 +75,14 @@ function LoginPage() {
           {error && <p className="error-message">{error}</p>}
 
           <button type="submit" className="login-button" disabled={loading}>
-            {loading ? '로그인 중...' : '로그인'}
+            {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
 
         <div className="signup-link-container">
-          <span>계정이 없으신가요?</span>
+          <span>Don't have an account yet?</span>
           <button onClick={() => navigate('/signup')} className="signup-link-button">
-            회원가입
+            Sign Up
           </button>
         </div>
       </div>

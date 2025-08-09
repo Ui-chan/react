@@ -331,3 +331,79 @@
   background-color: #20c997;
   color: white;
 }
+
+/* 페이지 전체를 버튼의 기준점으로 설정 */
+.second-game-page {
+    position: relative;
+  }
+  
+  /* 게임 플레이 중 뒤로가기 버튼 */
+  .game-play-back-button {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    z-index: 20;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #adb5bd;
+    background-color: #f8f9fa;
+    color: #495057;
+    font-size: 2.5rem;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    padding: 0;
+    padding-bottom: 5px; /* 아이콘 수직 정렬 */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+  
+  .game-play-back-button:hover {
+    background-color: #e9ecef;
+    border-color: #868e96;
+  }
+  
+  /* 나가기 확인 모달 텍스트 */
+  .exit-confirm-text {
+    font-size: 1rem;
+    color: #495057;
+    line-height: 1.6;
+    margin: 16px 0 24px 0;
+  }
+
+  /* --- [추가] 부모 확인 버튼 스타일 --- */
+.manual-confirm-button {
+  width: 100%;
+  max-width: 400px; /* 카메라 너비와 맞춤 */
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 18px;
+  border-radius: 16px;
+  border: none;
+  background-color: #4c6ef5; /* 다른 게임들과 구분되는 친근한 파란색 */
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(76, 110, 245, 0.3);
+  margin-bottom: 15px; /* 가이드 텍스트와의 간격 */
+}
+
+.manual-confirm-button:disabled {
+  background-color: #ced4da;
+  box-shadow: none;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.manual-confirm-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(76, 110, 245, 0.4);
+}
+
+/* 기존 가이드 텍스트의 상단 마진을 조정 */
+.game-parent-guide {
+  margin-top: 0; 
+}

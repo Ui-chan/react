@@ -11,14 +11,19 @@
   overflow: hidden;
 }
 
+/* --- MODIFIED PART --- */
 .home-child-header {
   flex-shrink: 0;
   padding: 15px 20px;
   background-color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  text-align: left;
   z-index: 10;
+  /* Added flex properties for alignment */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
+/* --- END MODIFIED PART --- */
 
 .header-logo {
   font-size: 1.8rem;
@@ -37,23 +42,21 @@
   position: relative;
 }
 
-/* --- 변경 버튼 스타일 추가 --- */
+/* --- MODIFIED PART --- */
 .change-view-button {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  /* Removed absolute positioning */
   padding: 8px 16px;
+  border: 1px solid #dee2e6;
+  background-color: #fff;
+  color: #495057;
+  border-radius: 8px;
   font-size: 0.9rem;
   font-weight: 600;
-  color: #495057;
-  background-color: white;
-  border: 1px solid #dee2e6;
-  border-radius: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   cursor: pointer;
-  z-index: 10;
   transition: all 0.2s ease;
+  /* z-index is no longer needed here */
 }
+/* --- END MODIFIED PART --- */
 .change-view-button:hover {
   background-color: #f1f3f5;
   border-color: #ced4da;

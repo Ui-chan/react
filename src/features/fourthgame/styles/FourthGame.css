@@ -10,6 +10,8 @@
   box-sizing: border-box;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background-color: #f0f4f8;
+  /* [수정] 페이지 전체를 뒤로가기 버튼의 기준점으로 설정합니다. */
+  position: relative;
 }
 
 /* 설명 페이지/모달 공통 스타일 */
@@ -38,12 +40,14 @@
 .game-play-again-button { background-color: #20c997; color: white; }
 .stamp-container { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; background-color: #f8f9fa; border-radius: 16px; padding: 20px; margin: 24px 0 32px 0; min-height: 100px; }
 .finish-message { font-size: 1.2rem; font-weight: 600; color: #495057; padding: 20px 0; }
+.exit-confirm-text { font-size: 1rem; color: #495057; line-height: 1.6; margin: 16px 0 24px 0; }
 
 /* 선택 화면 */
 .fourth-game-container {
   width: 100%;
   max-width: 800px;
   text-align: center;
+  /* [제거] 이전 수정사항(position, padding-top)을 제거하여 원래대로 되돌립니다. */
 }
 
 .choice-prompt {
@@ -102,10 +106,17 @@
 }
 
 .turn-counter {
-  margin-top: 40px;
-  font-size: 1.2rem;
-  color: #4a5568;
-  font-weight: 600;
+  position: absolute; /* [추가] 위치를 우측 상단으로 조정합니다. */
+  top: 40px;
+  right: 40px;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #343a40;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 /* 보상(비디오) 화면 */
@@ -146,17 +157,46 @@
   color: white;
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  /* transition에 box-shadow 추가 */
   transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* --- '다 봤어요!' 버튼 호버 효과 추가 --- */
 .return-button:hover {
-  transform: translateY(-3px); /* 위로 살짝 이동 */
-  box-shadow: 0 6px 20px rgba(32, 201, 151, 0.3); /* 그림자 효과 강화 */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(32, 201, 151, 0.3);
 }
 
 .return-button:active {
   transform: scale(0.97);
   filter: brightness(0.9);
+}
+
+
+/* --- [수정] 게임 플레이 중 뒤로가기 버튼 --- */
+.game-play-back-button {
+  position: absolute;
+  /* [수정] 페이지의 좌측 상단을 기준으로 위치를 잡습니다. */
+  top: 40px;
+  left: 40px;
+  z-index: 20;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #adb5bd;
+  background-color: #f8f9fa;
+  color: #495057;
+  font-size: 2.5rem;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  line-height: 1;
+  padding: 0;
+  padding-bottom: 5px; /* 아이콘 수직 정렬 */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.game-play-back-button:hover {
+  background-color: #e9ecef;
+  border-color: #868e96;
 }

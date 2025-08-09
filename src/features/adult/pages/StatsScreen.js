@@ -180,14 +180,12 @@ function StatsScreen() {
                                     <div className="summary-item"><span className="summary-label">Today's Playtime</span><span className="summary-value">{formatNumber(stats.game2.today_play_duration_seconds)}s</span></div>
                                     <div className="summary-item"><span className="summary-label">Today's Avg. Response</span><span className="summary-value">{formatNumber(stats.game2.today_avg_response_time / 1000)}s</span></div>
                                     
-                                    {/* [수정] 이 항목은 클릭 불가능한 일반 정보입니다. */}
-                                    <div className="summary-item">
-                                        <span className="summary-label">Overall Avg. Response</span>
+                                    <div className={`summary-item clickable ${visibleChart === 'g2_response_trend' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_response_trend')}>
+                                        <span className="summary-label">Overall Avg. Response ▾</span>
                                         <span className="summary-value">{formatNumber(stats.game2.overall_avg_response_time / 1000)}s</span>
                                     </div>
                                     
-                                    {/* [수정] 이 항목을 클릭하면 그래프가 표시됩니다. */}
-                                    <div className={`summary-item clickable ${visibleChart === 'g2_avg_playtime_trend' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_avg_playtime_trend')}>
+                                    <div className={`summary-item clickable ${visibleChart === 'g2_playtime_trend' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_playtime_trend')}>
                                         <span className="summary-label">Avg. Daily Playtime ▾</span>
                                         <span className="summary-value">{formatNumber(stats.game2.avg_daily_play_time_seconds / 60)}min</span>
                                     </div>
@@ -195,11 +193,17 @@ function StatsScreen() {
                                     <div className={`summary-item clickable ${visibleChart === 'g2_assist_playtime' ? 'active' : ''}`} onClick={() => handleMetricClick('g2_assist_playtime')}><span className="summary-label">Playtime by Assistance ▾</span><span className="summary-value">View Graph</span></div>
                                 </div>
                                 <div className="chart-display-area">
-                                    {/* [수정] "Avg. Daily Playtime" 클릭 시, "daily_response_time_trend" 데이터를 사용해 그래프를 그립니다. */}
-                                    {visibleChart === 'g2_avg_playtime_trend' && 
+                                    {visibleChart === 'g2_response_trend' && 
                                         <div className="chart-container">
                                             <h4>Response Time Trend by Date</h4>
                                             {renderLineChart(stats.game2?.daily_response_time_trend?.map(d => ({...d, value: d.value / 1000})), 'Response Time', 's')}
+                                        </div>
+                                    }
+
+                                    {visibleChart === 'g2_playtime_trend' && 
+                                        <div className="chart-container">
+                                            <h4>Playtime Trend by Date</h4>
+                                            {renderLineChart(stats.game2?.daily_play_time_trend, 'Playtime', 's')}
                                         </div>
                                     }
                                     
@@ -222,7 +226,7 @@ function StatsScreen() {
                                     <div className="summary-item"><span className="summary-label">Today's Playtime</span><span className="summary-value">{formatNumber(stats.game3.today_play_duration_seconds / 60)}min</span></div>
                                     <div className={`summary-item clickable ${visibleChart === 'g3_avg_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_avg_success')}><span className="summary-label">Overall Success Rate ▾</span><span className="summary-value">{formatNumber(stats.game3.overall_avg_success_rate)}%</span></div>
                                     <div className={`summary-item clickable ${visibleChart === 'g3_avg_power' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_avg_power')}>
-                                        <span className="summary-label">Overall Avg. Throw Power ▾</span><span className="summary-value">{formatNumber(Object.values(stats.game3?.avg_power_by_assistance || {}).reduce((a, b) => a + b, 0) / Object.values(stats.game3?.avg_power_by_assistance || {}).length || 0)}</span><span className="metric-note">Target: 60-70</span>
+                                        <span className="summary-label">Overall Avg. Throw Power ▾</span><span className="summary-value">{formatNumber(Object.values(stats.game3?.avg_power_by_assistance || {}).reduce((a, b) => a + b, 0) / Object.values(stats.game3?.avg_power_by_assistance || {}).length || 0)}</span><span className="metric-note">Target: 70-90</span>
                                     </div>
                                     <div className={`summary-item clickable ${visibleChart === 'g3_assist_success' ? 'active' : ''}`} onClick={() => handleMetricClick('g3_assist_success')}><span className="summary-label">Success Rate by Assistance ▾</span><span className="summary-value">View Graph</span></div>
                                 </div>

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'r
 // Corrected Paths
 import LoginPage from '../features/auth/pages/LoginPage';
 import SignupPage from '../features/auth/pages/SignupPage';
-import HomePage from './HomePage';
 import App from './App';
 
 import Survey from '../features/adult/pages/Survey';
@@ -59,11 +58,7 @@ function MainRoutes() {
       {/* 회원가입 */}
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* 홈 (하단바 포함) */}
-      <Route
-        path="/homepage"
-        element={withBottomNav(HomePage, 'home')}
-      />
+
 
 
       {/* 게임 페이지들 (하단바 없음) */}

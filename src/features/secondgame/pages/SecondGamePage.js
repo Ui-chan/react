@@ -9,6 +9,7 @@ const emotionData = [
     { name: 'surprised', emoji: '😖', modelName: 'surprised' },
 ];
 
+const userId = 2; // API 호출에 사용할 사용자 ID
 
 function SecondGamePage() {
   const navigate = useNavigate();
@@ -24,9 +25,9 @@ function SecondGamePage() {
   const [showSparkles, setShowSparkles] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
-  
-  // State to store the start time for the current emotion
   const [emotionStartTime, setEmotionStartTime] = useState(null);
+
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const currentEmotion = emotionData[currentEmotionIndex];
 
@@ -47,7 +48,6 @@ function SecondGamePage() {
     setCompletedCount(0);
     setCurrentEmotionIndex(0);
     setFinalAssistanceLevel(null);
-    // Record the start time when the game begins
     setEmotionStartTime(Date.now());
 
     try {
@@ -64,7 +64,7 @@ function SecondGamePage() {
         const response = await fetch('/api/games/session/start/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: 2, game_id: 2 }),
+            body: JSON.stringify({ user_id: userId, game_id: 2 }),
         });
         if (!response.ok) throw new Error('Failed to start session');
         const data = await response.json();
@@ -81,21 +81,16 @@ function SecondGamePage() {
     }, 2000);
   };
 
-  // --- 핵심 수정: 게임 상태, 세션 ID, 문제 번호가 변경될 때마다 감지 로직을 제어 ---
   useEffect(() => {
-    // 게임 중이고, 피드백이 표시되지 않으며, 세션 ID가 발급된 상태일 때만 감지를 시작합니다.
     if (gameState === 'playing' && !feedback && sessionId) {
         startDetectionInterval();
     } else {
-        // 조건이 맞지 않으면 인터벌을 확실히 제거합니다.
         clearInterval(intervalRef.current);
     }
-    // 이 useEffect는 게임 상태, 문제 번호, 피드백, 세션 ID가 변경될 때마다 재실행됩니다.
   }, [gameState, currentEmotionIndex, feedback, sessionId]);
 
 
   const captureAndSendFrame = async () => {
-    // Ensure the video is ready and the start time has been set
     if (!videoRef.current || videoRef.current.readyState < 3 || !emotionStartTime) return;
 
     const canvas = document.createElement('canvas');
@@ -106,8 +101,6 @@ function SecondGamePage() {
     ctx.scale(-1, 1);
     ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
     const imageBase64 = canvas.toDataURL('image/jpeg');
-
-    // Calculate the time elapsed since the emotion was shown
     const response_time_ms = Date.now() - emotionStartTime;
 
     try {
@@ -117,7 +110,7 @@ function SecondGamePage() {
             body: JSON.stringify({ 
                 image: imageBase64,
                 target_emotion: currentEmotion.modelName,
-                response_time_ms: response_time_ms // Send the elapsed time
+                response_time_ms: response_time_ms
             }),
         });
         if (!response.ok) return;
@@ -125,7 +118,7 @@ function SecondGamePage() {
         const result = await response.json();
 
         if (result.is_match) {
-            handleSuccess(response_time_ms);  // 전달
+            handleSuccess(response_time_ms);
         }
     } catch (error) {
         console.error("Emotion detection API error:", error);
@@ -162,7 +155,6 @@ function SecondGamePage() {
             setFeedback('');
             if (currentEmotionIndex < emotionData.length - 1) {
                 setCurrentEmotionIndex(prev => prev + 1);
-                // Reset the timer for the next emotion
                 setEmotionStartTime(Date.now());
             } else {
                 setGameState('finished');
@@ -172,41 +164,79 @@ function SecondGamePage() {
 
     } catch (error) {
         console.error("Error logging interaction:", error);
-        // 에러 발생 시에도 다음 시도를 위해 인터벌을 다시 시작할 수 있도록 합니다.
         if (gameState === 'playing') {
             startDetectionInterval();
         }
     }
   };
   
-  const endCurrentSession = async () => {
+  // --- [수정] 세션 종료와 AI 분석 로직을 명확히 분리 ---
+
+  const logSessionEnd = () => {
+    if (!sessionId) return Promise.resolve();
+    return fetch('/api/games/second-game/session/end/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        session_id: sessionId, 
+        completed_count: completedCount,
+        assistance_level: finalAssistanceLevel
+      }),
+    });
+  };
+
+  const triggerAiAnalysis = () => {
+    if (!sessionId) return Promise.resolve();
+    return fetch('/api/data/ai-analysis/game2/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    });
+  };
+  
+  // 게임을 정상적으로 완료했을 때 호출 (분석O)
+  const handleGameEnd = async () => {
     if (!sessionId) return;
     try {
-      await fetch('/api/games/second-game/session/end/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          session_id: sessionId, 
-          completed_count: completedCount,
-          assistance_level: finalAssistanceLevel
-        }),
-      });
-      setSessionId(null);
+      await Promise.all([logSessionEnd(), triggerAiAnalysis()]);
+      console.log("Session ended and AI analysis for Game 2 triggered successfully.");
     } catch (error) {
-      console.error("Error ending session:", error);
+      console.error("Error during game end process:", error);
+    } finally {
+      setSessionId(null);
     }
   };
 
-  const handleExit = async () => {
+  // '게임 완료' 모달의 '나가기' 버튼
+  const handleFinishAndExit = async () => {
     stopCameraAndDetection();
-    await endCurrentSession();
+    await handleGameEnd();
     navigate('/play/');
   };
 
+  // '다시하기' 버튼
   const handlePlayAgain = async () => {
     stopCameraAndDetection();
-    await endCurrentSession();
+    await handleGameEnd();
     setGameState('explanation');
+  };
+  
+  // '뒤로가기' 모달의 '확인' 버튼 (분석X)
+  const handleConfirmExit = async () => {
+    stopCameraAndDetection();
+    try {
+      await logSessionEnd(); // AI 분석 없이 세션 기록만 함
+      console.log("Session ended without AI analysis.");
+    } catch (error) {
+      console.error("Error ending session early:", error);
+    } finally {
+      setSessionId(null);
+      navigate('/play/');
+    }
+  };
+
+  const handleBackButtonClick = () => {
+    setShowExitModal(true);
   };
 
   const renderExplanationPage = () => (
@@ -226,13 +256,14 @@ function SecondGamePage() {
 
   const renderGamePage = () => (
     <div className="second-game-container">
+      <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
+      
       {feedback === 'great' && <div className="game-feedback-correct"><h1>Awesome! 👍</h1></div>}
       <div className="emotion-display">
         <div className="emotion-emoji">{currentEmotion.emoji}</div>
         <div className="emotion-prompt">Let's make a {currentEmotion.name} face!</div>
       </div>
       <div className="camera-container">
-        {/* onCanPlay 이벤트 핸들러를 제거하고 useEffect로 로직을 통합합니다. */}
         <video ref={videoRef} autoPlay playsInline muted></video>
         {showSparkles && <div className="sparkle-effect"></div>}
         <div className="camera-status-overlay">
@@ -261,25 +292,29 @@ function SecondGamePage() {
         <div className="assistance-final-container">
           <p className="assistance-title">Was any help needed during the game?</p>
           <div className="assistance-buttons">
-            <button 
-              className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('NONE')}
-            >No Help</button>
-            <button 
-              className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >A little help</button>
-            <button 
-              className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >A lot of help</button>
+            <button className={finalAssistanceLevel === 'NONE' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('NONE')}>No Help</button>
+            <button className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('VERBAL')}>A little help</button>
+            <button className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('PHYSICAL')}>A lot of help</button>
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handleFinishAndExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
           <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
+    </div>
+  );
+
+  const renderExitModal = () => (
+    <div className="game-modal-overlay">
+        <div className="game-modal-content">
+            <h2>Exit Game?</h2>
+            <p className="exit-confirm-text">Are you sure you want to quit the game? Your progress will not be saved.</p>
+            <div className="game-modal-buttons">
+                <button onClick={() => setShowExitModal(false)} className="game-modal-button game-exit-button">Cancel</button>
+                <button onClick={handleConfirmExit} className="game-modal-button game-play-again-button">Confirm</button>
+            </div>
+        </div>
     </div>
   );
 
@@ -288,6 +323,7 @@ function SecondGamePage() {
       {gameState === 'explanation' && renderExplanationPage()}
       {gameState === 'playing' && renderGamePage()}
       {gameState === 'finished' && renderGameFinishedModal()}
+      {showExitModal && renderExitModal()}
     </div>
   );
 }

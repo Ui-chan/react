@@ -142,14 +142,18 @@ function HomeChild() {
     
     return (
         <div className="home-child-layout">
+            {/* --- MODIFIED PART --- */}
             <header className="home-child-header">
                 <h1 className="header-logo">𝒁𝒆𝒓𝒐𝑫𝒐𝒔𝒆</h1>
-            </header>
-            <main className="home-child-content">
+                {/* The button is now inside the header */}
                 <button className="change-view-button" onClick={() => navigate('/homeadult')}>
-                    Switch
+                    Parent's View
                 </button>
-                
+            </header>
+            {/* --- END MODIFIED PART --- */}
+
+            <main className="home-child-content">
+                {/* The button has been removed from here */}
                 <div 
                     ref={playroomRef}
                     className="playroom" 

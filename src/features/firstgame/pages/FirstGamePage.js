@@ -20,13 +20,11 @@ function FirstGamePage() {
   const [isGameReady, setIsGameReady] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Checking for available quizzes...');
 
-  // State to manage the exit confirmation modal
   const [showExitModal, setShowExitModal] = useState(false);
 
   const pollTimeoutRef = useRef(null);
   const userId = 2; // In a real environment, this should be retrieved from login info, etc.
 
-  // --- Step 1: On page entry, check for available quizzes every 5 seconds ---
   useEffect(() => {
     const pollForAvailableQuizzes = async () => {
       try {
@@ -47,7 +45,7 @@ function FirstGamePage() {
         } else {
           setIsGameReady(false);
           setLoadingMessage('The AI is preparing the next quiz. Please wait a moment...');
-          pollTimeoutRef.current = setTimeout(pollForAvailableQuizzes, 5000); // Check again after 5 seconds
+          pollTimeoutRef.current = setTimeout(pollForAvailableQuizzes, 5000);
         }
       } catch (error)
 {
@@ -58,18 +56,15 @@ function FirstGamePage() {
       }
     };
 
-    // Start polling only when in the 'explanation' state
     if (gameState === 'explanation') {
       pollForAvailableQuizzes();
     }
 
-    // Clear the poll timeout when the component unmounts or gameState changes
     return () => clearTimeout(pollTimeoutRef.current);
   }, [gameState]);
 
   const currentQuestion = gameData[currentQuestionIndex];
 
-  // --- Step 2: When the 'Start Game' button is clicked ---
   const handleStartGame = async () => {
     if (!isGameReady) {
       alert("The quiz is not ready yet. The button will be enabled shortly.");
@@ -77,14 +72,12 @@ function FirstGamePage() {
     }
 
     try {
-      // 2-1. Start generating quizzes for the next game in the background
       fetch('/api/games/firstgame/trigger-generation/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId }),
       });
 
-      // 2-2. Start the current game session
       const sessionResponse = await fetch('/api/games/session/start/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,7 +88,6 @@ function FirstGamePage() {
       const sessionData = await sessionResponse.json();
       setSessionId(sessionData.session_id);
 
-      // 2-3. Change the game state to 'playing'
       setGameState('playing');
       setCurrentQuestionIndex(0);
       setCorrectAnswers(0);
@@ -157,38 +149,71 @@ function FirstGamePage() {
     }
   };
   
-  // --- Step 3: On game end, end the current session ---
-  const endCurrentSession = async () => {
+  // --- [수정] 세션 종료와 AI 분석 로직을 명확히 분리 ---
+  
+  const logSessionEnd = () => {
+    if (!sessionId) return Promise.resolve();
+    return fetch('/api/games/first-game/session/end/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        session_id: sessionId, 
+        correct_answers: correctAnswers,
+        assistance_level: finalAssistanceLevel,
+        quiz_ids: playedQuizIds
+      }),
+    });
+  };
+
+  const triggerAiAnalysis = () => {
+    if (!sessionId) return Promise.resolve();
+    return fetch('/api/data/ai-analysis/game1/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    });
+  };
+
+  // 게임을 정상적으로 완료했을 때 호출 (분석O)
+  const handleGameEnd = async () => {
     if (!sessionId) return;
     try {
-      await fetch('/api/games/first-game/session/end/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          session_id: sessionId, 
-          correct_answers: correctAnswers,
-          assistance_level: finalAssistanceLevel,
-          quiz_ids: playedQuizIds
-        }),
-      });
+      await Promise.all([logSessionEnd(), triggerAiAnalysis()]);
+      console.log("Session ended and AI analysis for Game 1 triggered successfully.");
+    } catch (error) {
+      console.error("Error during game end process:", error);
+    } finally {
       setSessionId(null);
       setPlayedQuizIds([]);
-    } catch (error) {
-      console.error("Error ending session:", error);
     }
   };
 
-  const handleExit = async () => {
-    await endCurrentSession();
+  // '게임 완료' 모달의 '나가기' 버튼
+  const handleFinishAndExit = async () => {
+    await handleGameEnd();
     navigate('/play/');
   };
 
+  // '다시하기' 버튼
   const handlePlayAgain = async () => {
-    await endCurrentSession();
+    await handleGameEnd();
     setGameState('explanation');
   };
 
-  // Function to show the exit modal
+  // '뒤로가기' 모달의 '확인' 버튼 (분석X)
+  const handleConfirmExit = async () => {
+    try {
+      await logSessionEnd();
+      console.log("Session ended without AI analysis.");
+    } catch (error) {
+      console.error("Error ending session early:", error);
+    } finally {
+      setSessionId(null);
+      setPlayedQuizIds([]);
+      navigate('/play/');
+    }
+  };
+
   const handleBackButtonClick = () => {
     setShowExitModal(true);
   };
@@ -249,14 +274,13 @@ function FirstGamePage() {
           </div>
         </div>
         <div className="game-modal-buttons">
-          <button onClick={handleExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
+          <button onClick={handleFinishAndExit} className="game-modal-button game-exit-button" disabled={!finalAssistanceLevel}>Exit</button>
           <button onClick={handlePlayAgain} className="game-modal-button game-play-again-button" disabled={!finalAssistanceLevel}>Play Again</button>
         </div>
       </div>
     </div>
   );
 
-  // Function to render the exit confirmation modal
   const renderExitModal = () => (
     <div className="game-modal-overlay">
       <div className="game-modal-content">
@@ -264,7 +288,7 @@ function FirstGamePage() {
         <p className="exit-confirm-text">Are you sure you want to quit the game? Your progress will not be saved.</p>
         <div className="game-modal-buttons">
           <button onClick={() => setShowExitModal(false)} className="game-modal-button game-exit-button">Cancel</button>
-          <button onClick={handleExit} className="game-modal-button game-play-again-button">Confirm</button>
+          <button onClick={handleConfirmExit} className="game-modal-button game-play-again-button">Confirm</button>
         </div>
       </div>
     </div>
@@ -290,7 +314,6 @@ function FirstGamePage() {
   return (
     <div className="first-game-page">
       {renderByGameState()}
-      {/* Conditionally render the exit modal */}
       {showExitModal && renderExitModal()}
     </div>
   );

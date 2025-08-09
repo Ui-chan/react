@@ -16,7 +16,8 @@ function SignupPage() {
     setError('');
 
     try {
-      const response = await fetch('/api/users/signup/', { // 회원가입 API 경로
+      // Signup API endpoint
+      const response = await fetch('/api/users/signup/', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, age: parseInt(age) }),
@@ -25,12 +26,12 @@ function SignupPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        // Django validation 에러 메시지를 표시
+        // Display Django validation error messages
         const errorMessages = Object.values(data).flat().join('\n');
-        throw new Error(errorMessages || '회원가입에 실패했습니다.');
+        throw new Error(errorMessages || 'Signup failed.');
       }
       
-      alert('회원가입 성공! 로그인 페이지로 이동합니다.');
+      alert('Signup successful! Redirecting to the login page.');
       navigate('/login');
 
     } catch (err) {
@@ -44,45 +45,43 @@ function SignupPage() {
   return (
     <div className="signup-page-container">
       <div className="signup-form-wrapper">
-        <img
-          src="/assets/zerodose_logo.svg"
-          alt="ZeroDose Logo"
-          className="signup-logo"
-        />
-        <h1 className="signup-title">회원가입</h1>
-        <p className="signup-subtitle">ZeroDose와 함께 아이의 성장을 응원해 주세요.</p>
+        {/* Logo icon for the signup page */}
+        <div className="signup-logo">🌱</div>
+
+        <h1 className="signup-title">Sign Up</h1>
+        <p className="signup-subtitle">Support your child's growth with ZeroDose.</p>
         
         <form onSubmit={handleSignup} className="signup-form">
           <div className="input-group">
-            <label htmlFor="username">사용자 이름</label>
+            <label htmlFor="username">Username</label>
             <input 
               id="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="사용할 이름을 입력하세요"
+              placeholder="Enter your desired username"
               required
             />
           </div>
           <div className="input-group">
-            <label htmlFor="password">비밀번호</label>
+            <label htmlFor="password">Password</label>
             <input
               id="password" 
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)} 
-              placeholder="비밀번호를 입력하세요"
+              placeholder="Enter your password"
               required
             />
           </div>
           <div className="input-group">
-            <label htmlFor="age">자녀 나이 (만)</label>
+            <label htmlFor="age">Child's Age (in years)</label>
             <input
               id="age" 
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)} 
-              placeholder="숫자만 입력하세요"
+              placeholder="Enter numbers only"
               required
             />
           </div>
@@ -90,14 +89,14 @@ function SignupPage() {
           {error && <p className="error-message">{error}</p>}
 
           <button type="submit" className="signup-button" disabled={loading}>
-            {loading ? '가입하는 중...' : '가입하기'}
+            {loading ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
         <div className="login-link-container">
-          <span>이미 계정이 있으신가요?</span>
+          <span>Already have an account?</span>
           <button onClick={() => navigate('/login')} className="login-link-button">
-            로그인
+            Log In
           </button>
         </div>
       </div>

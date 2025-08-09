@@ -26,10 +26,13 @@ function FourthGamePage() {
 
   const [currentChoices, setCurrentChoices] = useState([]);
   
-  // --- API 연동 상태 ---
+  // API 연동 상태
   const [sessionId, setSessionId] = useState(null);
   const [choiceStartTime, setChoiceStartTime] = useState(null);
   const [finalAssistanceLevel, setFinalAssistanceLevel] = useState(null);
+
+  // [추가] 나가기 확인 모달 상태
+  const [showExitModal, setShowExitModal] = useState(false);
 
   const getNewChoices = () => {
     const shuffled = shuffleArray([...allChoices]);
@@ -39,9 +42,9 @@ function FourthGamePage() {
   useEffect(() => {
     if (gameState === 'choosing') {
       getNewChoices();
-      setChoiceStartTime(Date.now()); // 새로운 선택지가 보일 때 시간 기록
+      setChoiceStartTime(Date.now());
     }
-  }, [gameState, choicesMade]); // choicesMade가 바뀔 때도 새 선택지를 가져옴
+  }, [gameState, choicesMade]);
 
 
   const playSound = () => {
@@ -62,7 +65,7 @@ function FourthGamePage() {
     const responseTimeMs = Date.now() - choiceStartTime;
     const logData = {
       session_id: sessionId,
-      is_successful: true, // 선택은 항상 성공
+      is_successful: true,
       response_time_ms: responseTimeMs,
       interaction_data: {
         selected_item_name: choice.name,
@@ -72,14 +75,12 @@ function FourthGamePage() {
     };
 
     try {
-      // 공용 로그 API 호출
       await fetch('/api/games/interaction/log/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(logData),
       });
 
-      // 로그 저장 성공 후 보상 화면으로 전환
       setTimeout(() => {
         setSelectedReward(choice);
         setGameState('reward');
@@ -88,7 +89,7 @@ function FourthGamePage() {
     } catch (error) {
       console.error("Error logging interaction:", error);
       alert("게임 기록 저장에 실패했습니다.");
-      setActiveChoiceId(null); // 에러 시 애니메이션 초기화
+      setActiveChoiceId(null);
     }
   };
 
@@ -107,11 +108,10 @@ function FourthGamePage() {
 
   const handleStartGame = async () => {
     try {
-      // 공용 세션 시작 API 호출
       const response = await fetch('/api/games/session/start/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_id: 2, game_id: 4 }), // user_id: 2, game_id: 4
+        body: JSON.stringify({ user_id: 2, game_id: 4 }),
       });
       if (!response.ok) throw new Error('Failed to start session');
       
@@ -156,6 +156,11 @@ function FourthGamePage() {
     navigate('/play/');
   };
 
+  // [추가] 뒤로가기 버튼 클릭 시 모달을 여는 함수
+  const handleBackButtonClick = () => {
+    setShowExitModal(true);
+  };
+
   const renderExplanationPage = () => (
     <div className="game-explanation-container">
       <h1><span role="img" aria-label="hand pointing emoji">👆</span> "I Want This!" Game</h1>
@@ -165,15 +170,16 @@ function FourthGamePage() {
         <strong>This helps develop functional communication skills.</strong>
       </p>
       <div className="game-buttons-container">
-        <button onClick={handleExit} className="game-back-button">Go Back</button>
+        <button onClick={() => navigate('/play')} className="game-back-button">Go Back</button>
         <button onClick={handleStartGame} className="game-start-button">Start Game</button>
       </div>
     </div>
   );
   
-
   const renderChoosingPage = () => (
     <div className="fourth-game-container">
+      {/* [추가] 뒤로가기 버튼 */}
+      <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
       <h2 className="choice-prompt">What do you want to watch? Choose one!</h2>
       <div className="choices-container">
         {currentChoices.map(choice => (
@@ -218,18 +224,9 @@ function FourthGamePage() {
         <div className="assistance-final-container">
           <p className="assistance-title">Did the child need help during the game?</p>
           <div className="assistance-buttons">
-            <button 
-              className={finalAssistanceLevel === 'NONE' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('NONE')}
-            >No Help</button>
-            <button 
-              className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('VERBAL')}
-            >Some Help</button>
-            <button 
-              className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''}
-              onClick={() => setFinalAssistanceLevel('PHYSICAL')}
-            >A Lot of Help</button>
+            <button className={finalAssistanceLevel === 'NONE' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('NONE')}>No Help</button>
+            <button className={finalAssistanceLevel === 'VERBAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('VERBAL')}>Some Help</button>
+            <button className={finalAssistanceLevel === 'PHYSICAL' ? 'selected' : ''} onClick={() => setFinalAssistanceLevel('PHYSICAL')}>A Lot of Help</button>
           </div>
         </div>
         <div className="game-modal-buttons">
@@ -240,12 +237,29 @@ function FourthGamePage() {
     </div>
   );
 
+  // [추가] 나가기 확인 모달 렌더링 함수
+  const renderExitModal = () => (
+    <div className="game-modal-overlay">
+      <div className="game-modal-content">
+        <h2>Exit Game?</h2>
+        <p className="exit-confirm-text">Are you sure you want to quit? Your progress so far will be saved.</p>
+        <div className="game-modal-buttons">
+          <button onClick={() => setShowExitModal(false)} className="game-modal-button game-exit-button">Cancel</button>
+          <button onClick={handleExit} className="game-modal-button game-play-again-button">Confirm</button>
+        </div>
+      </div>
+    </div>
+  );
+
+
   return (
     <div className="fourth-game-page">
       {gameState === 'explanation' && renderExplanationPage()}
       {gameState === 'choosing' && renderChoosingPage()}
       {gameState === 'reward' && renderRewardPage()}
       {gameState === 'finished' && renderGameFinishedModal()}
+      {/* [추가] 모달 조건부 렌더링 */}
+      {showExitModal && renderExitModal()}
     </div>
   );
 }

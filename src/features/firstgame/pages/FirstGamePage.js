@@ -242,7 +242,6 @@ function FirstGamePage() {
     return (
       <div className="game-container">
         <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
-        {feedback === 'correct' && <div className="feedback-correct"><h1>Correct! 🎉</h1></div>}
         <h2 className="game-prompt">{currentQuestion.prompt_text}</h2>
         <div className="cards-container">
           {currentQuestion.items.map((item) => (
@@ -313,6 +312,7 @@ function FirstGamePage() {
 
   return (
     <div className="first-game-page">
+      {feedback === 'correct' && <div className="feedback-correct"><h1>Correct! 🎉</h1></div>}
       {renderByGameState()}
       {showExitModal && renderExitModal()}
     </div>

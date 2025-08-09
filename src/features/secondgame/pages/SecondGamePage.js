@@ -6,7 +6,7 @@ const emotionData = [
     { name: 'angry', emoji: '😡', modelName: 'angry' },
     { name: 'happy', emoji: '😄', modelName: 'happy' },
     { name: 'sad', emoji: '😐', modelName: 'sad' },
-    { name: 'surprised', emoji: '😖', modelName: 'surprised' },
+    { name: 'surprised', emoji: '🫢', modelName: 'surprised' },
 ];
 
 const userId = 2; // API 호출에 사용할 사용자 ID
@@ -16,7 +16,7 @@ function SecondGamePage() {
   const [gameState, setGameState] = useState('explanation');
   const [currentEmotionIndex, setCurrentEmotionIndex] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
-  
+
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const intervalRef = useRef(null);
@@ -73,7 +73,7 @@ function SecondGamePage() {
         console.error("Session start error:", error);
     }
   };
-  
+
   const startDetectionInterval = () => {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
@@ -107,7 +107,7 @@ function SecondGamePage() {
         const response = await fetch('/api/data/detect-emotion/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 image: imageBase64,
                 target_emotion: currentEmotion.modelName,
                 response_time_ms: response_time_ms
@@ -124,7 +124,7 @@ function SecondGamePage() {
         console.error("Emotion detection API error:", error);
     }
   };
-  
+
   const handleSuccess = async (response_time_ms) => {
     if (feedback) return;
     clearInterval(intervalRef.current);
@@ -169,6 +169,14 @@ function SecondGamePage() {
         }
     }
   };
+
+  // --- [수정] "확인하였습니다" 버튼 클릭 시 수동으로 성공 처리 ---
+  const handleManualSuccess = () => {
+    // response_time_ms를 어떻게 처리할지 결정해야 합니다. 
+    // 여기서는 emotionStartTime을 기준으로 계산하지만, '수동 확인'의 경우 다른 값을 사용할 수도 있습니다.
+    const response_time_ms = emotionStartTime ? Date.now() - emotionStartTime : 0;
+    handleSuccess(response_time_ms);
+  };
   
   // --- [수정] 세션 종료와 AI 분석 로직을 명확히 분리 ---
 
@@ -177,8 +185,8 @@ function SecondGamePage() {
     return fetch('/api/games/second-game/session/end/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        session_id: sessionId, 
+      body: JSON.stringify({
+        session_id: sessionId,
         completed_count: completedCount,
         assistance_level: finalAssistanceLevel
       }),
@@ -193,7 +201,7 @@ function SecondGamePage() {
       body: JSON.stringify({ user_id: userId }),
     });
   };
-  
+
   // 게임을 정상적으로 완료했을 때 호출 (분석O)
   const handleGameEnd = async () => {
     if (!sessionId) return;
@@ -220,7 +228,7 @@ function SecondGamePage() {
     await handleGameEnd();
     setGameState('explanation');
   };
-  
+
   // '뒤로가기' 모달의 '확인' 버튼 (분석X)
   const handleConfirmExit = async () => {
     stopCameraAndDetection();
@@ -257,7 +265,7 @@ function SecondGamePage() {
   const renderGamePage = () => (
     <div className="second-game-container">
       <button onClick={handleBackButtonClick} className="game-play-back-button">‹</button>
-      
+
       {feedback === 'great' && <div className="game-feedback-correct"><h1>Awesome! 👍</h1></div>}
       <div className="emotion-display">
         <div className="emotion-emoji">{currentEmotion.emoji}</div>
@@ -266,10 +274,12 @@ function SecondGamePage() {
       <div className="camera-container">
         <video ref={videoRef} autoPlay playsInline muted></video>
         {showSparkles && <div className="sparkle-effect"></div>}
-        <div className="camera-status-overlay">
-            <p>Analyzing your expression...</p>
-        </div>
+
       </div>
+      {/* --- [수정] "확인하였습니다" 버튼 추가 --- */}
+      <button onClick={handleManualSuccess} className="manual-confirm-button" disabled={!!feedback}>
+        I've confirmed it
+      </button>
       <div className="game-parent-guide">
         It automatically detects when you make the face in the camera!
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/StampScreen.css';
 
@@ -17,6 +17,13 @@ function StampScreen() {
     const [stampInfo, setStampInfo] = useState({ username: 'User', stamp_count: 0 });
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
+
+    // --- [추가] 드래그 기능을 위한 state 및 ref ---
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [dragOffset, setDragOffset] = useState(0);
+    const pagesRef = useRef(null);
+    // ---------------------------------------------
 
     const totalPages = Math.ceil(stampInfo.stamp_count / STAMPS_PER_PAGE);
 
@@ -55,6 +62,51 @@ function StampScreen() {
         setCurrentPage(prev => Math.min(prev + 1, totalPages - 1));
     };
 
+    // --- [추가] 드래그 이벤트 핸들러 함수들 ---
+
+    const handleDragStart = (e) => {
+        setIsDragging(true);
+        // 터치 이벤트와 마우스 이벤트를 구분하여 시작 X좌표 저장
+        const currentX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+        setStartX(currentX);
+        if (pagesRef.current) {
+            // 드래그 중에는 transition 효과를 제거하여 부드럽게 만듬
+            pagesRef.current.style.transition = 'none';
+        }
+    };
+
+    const handleDragMove = (e) => {
+        if (!isDragging) return;
+        // 드래그 중 텍스트 선택 등 기본 동작 방지
+        e.preventDefault();
+        const currentX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+        setDragOffset(currentX - startX);
+    };
+
+    const handleDragEnd = () => {
+        if (!isDragging) return;
+        setIsDragging(false);
+
+        if (pagesRef.current) {
+            // 드래그가 끝나면 transition 효과를 다시 적용
+            pagesRef.current.style.transition = 'transform 0.5s ease-in-out';
+            
+            // 페이지 너비의 1/4 이상 드래그했을 때 페이지를 넘김
+            const threshold = pagesRef.current.offsetWidth / 4;
+
+            if (dragOffset < -threshold && currentPage < totalPages - 1) {
+                handleNextPage();
+            } else if (dragOffset > threshold && currentPage > 0) {
+                handlePrevPage();
+            }
+        }
+        
+        // 드래그 오프셋 초기화
+        setDragOffset(0);
+    };
+    // ---------------------------------------------
+
+
     return (
         <div className="stamp-screen-layout">
             <header className="stamp-screen-header">
@@ -79,7 +131,19 @@ function StampScreen() {
                     </button>
 
                     <div className="stamp-book">
-                        <div className="stamp-pages" style={{ transform: `translateX(-${currentPage * 100}%)` }}>
+                        {/* --- [수정] 드래그 이벤트 핸들러와 ref, style 적용 --- */}
+                        <div 
+                            className="stamp-pages"
+                            ref={pagesRef}
+                            style={{ transform: `translateX(calc(-${currentPage * 100}% + ${dragOffset}px))` }}
+                            onMouseDown={handleDragStart}
+                            onMouseMove={handleDragMove}
+                            onMouseUp={handleDragEnd}
+                            onMouseLeave={handleDragEnd}
+                            onTouchStart={handleDragStart}
+                            onTouchMove={handleDragMove}
+                            onTouchEnd={handleDragEnd}
+                        >
                             {loading ? (
                                 <div className="stamp-page"><p>Loading stamps...</p></div>
                             ) : (
